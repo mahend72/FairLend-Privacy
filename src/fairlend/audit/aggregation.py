@@ -28,29 +28,48 @@ small hand-built DataFrame without needing a real join.
 
 ---
 
-ENCRYPTED PATH (Phase 5; manuscript Algorithm 5's actual encrypted
-aggregation, as opposed to the plaintext analogue above). This is a
-SEPARATE set of types/functions appended below -- nothing above this
-point is modified by it, and the plaintext API's behaviour/tests are
+ENCRYPTED PATH -- Phase 1 (compSim removal, current production path) and
+LEGACY Phase 5 (compSim-based, retained for equivalence testing and
+reproducibility) are BOTH defined below. Nothing above this point
+(the plaintext API) is modified by either, and its behaviour/tests are
 unaffected.
 
-Same population rules as above (C_k always, A_k iff approved, P/N/TP/FP
-only over resolved outcomes), but every group-membership contribution is
-an ENCRYPTED similarity score (``fairlend.audit.similarity.comp_sim``'s
-output) rather than a plaintext boolean-driven count -- the LPU never
-learns which group a row is in; it homomorphically adds the SAME
-similarity-weighted ciphertext to a row's contribution for EVERY group,
-and only decryption (FLA-only, diagnostic in this phase) reveals the
-resulting per-group tallies.
+PHASE 1 (production, ``compute_encrypted_audit`` / ``EncryptedAuditPacket``
+/ ``EncryptedAuditCounts``): reviewer2_implementation_gap_audit.md
+established that, given the manuscript's own reference-vector definitions
+(``HE.r_m = Enc(1,0)``, ``HE.r_f = Enc(0,1)``), compSim's output is
+provably identical to the credential's own ciphertext slot --
+``compSim(HE.g_i, HE.r_m) = Enc(g_i,m)`` -- so multiplying against a
+reference vector to "recompute" a value already present in the ciphertext
+is unnecessary. This path therefore accumulates each row's own 2-slot
+``HE.g_i`` credential ciphertext DIRECTLY into six 2-slot running-total
+ciphertexts (one per statistic, both groups packed in the same
+ciphertext's two SIMD slots) via ADDITION ONLY:
+
+    HE.C  += HE.g_i                          (always)
+    HE.A  += HE.g_i     iff y_pred == 1
+    HE.P  += HE.g_i     iff resolved and y_true == 1
+    HE.N  += HE.g_i     iff resolved and y_true == 0
+    HE.TP += HE.g_i     iff resolved and y_true == 1 and y_pred == 1
+    HE.FP += HE.g_i     iff resolved and y_true == 0 and y_pred == 1
+
+Decrypting any one of these six 2-slot ciphertexts yields ``[stat_m,
+stat_f]`` directly -- e.g. ``Dec(HE.C) = [C_m, C_f]`` -- with no
+reference vectors, no ciphertext-ciphertext multiplication, no
+relinearisation, and no rescaling anywhere in this path (multiplicative
+depth 0; see reviewer2_phase1_compsim_removal_report.md's "Complexity
+change" section for the measured comparison against the legacy path).
+This also halves the aggregate packet's ciphertext count (6, one per
+statistic, versus the legacy path's 12, one per statistic PER group).
 
 Per-record group-membership ciphertexts are obtained EXCLUSIVELY via
-``fairlend.audit.similarity.comp_sim`` on a real, IP-issued, LPU-verified
-``ProtectedAttributeCredential`` (see ``EncryptedTestRecord`` below) --
-this module never accepts, and never internally constructs, a ciphertext
-from a plaintext gender label. Producing that credential in the first
-place (i.e. deciding which label to ask the IP to encrypt for a given
-TEST row) is the EVALUATION HARNESS's job
-(``evaluation/run_encrypted_audit.py``), exactly as
+``fairlend.audit.similarity.load_verified_protected_attribute_vector`` on
+a real, IP-issued, LPU-verified ``ProtectedAttributeCredential`` (see
+``EncryptedTestRecord`` below) -- this module never accepts, and never
+internally constructs, a ciphertext from a plaintext gender label.
+Producing that credential in the first place (i.e. deciding which label
+to ask the IP to encrypt for a given TEST row) is the EVALUATION
+HARNESS's job (``evaluation/run_encrypted_audit.py``), exactly as
 ``fairlend.roles.identity_provider.IdentityProvider.issue_credential``'s
 own docstring describes -- the harness may know a row's synthetic label
 (it generated the controlled experiment), but nothing in this module ever
@@ -60,12 +79,36 @@ Conditional accumulation uses plain Python ``if`` statements on PLAINTEXT
 ``y_pred``/``y_true`` (the LPU's own legitimate operational data -- a
 loan decision and a repayment outcome are not secret; only the protected
 attribute is) to decide WHETHER to homomorphically add a given row's
-similarity ciphertext into a given aggregate -- never an extra
-ciphertext-plaintext multiplication by a 0/1 indicator, since a plain
-Python conditional skip achieves the identical result with strictly less
-homomorphic work and no additional multiplicative depth.
+credential ciphertext into a given aggregate -- never a ciphertext-
+plaintext multiplication by a 0/1 indicator, since a plain Python
+conditional skip achieves the identical result with strictly less
+homomorphic work and no multiplicative depth at all.
 
-ENCRYPTED-ZERO INITIALISATION (verified empirically, not assumed):
+ENCRYPTED-ZERO INITIALISATION: every accumulator here is initialised as a
+fresh, top-level 2-slot zero ciphertext (``ts.ckks_vector(context, [0.0,
+0.0])``), and every ``HE.g_i`` added to it is ALSO fresh and top-level
+(never multiplied by anything in this path) -- so, unlike the legacy
+path below, there is no level mismatch to reconcile at all; addition
+between two top-level ciphertexts needs no ``auto_mod_switch`` help.
+
+LEGACY (``compute_encrypted_audit_legacy_compsim`` /
+``LegacyEncryptedAuditPacket`` / ``LegacyEncryptedGroupAuditCounts``,
+Phase 5; manuscript Algorithm 5 as originally implemented): every
+group-membership contribution is an ENCRYPTED similarity score
+(``fairlend.audit.similarity.comp_sim``'s output, one ciphertext-
+ciphertext multiplication per reference vector) rather than the
+credential's own ciphertext -- the LPU never learns which group a row is
+in; it homomorphically adds the SAME similarity-weighted ciphertext to a
+row's contribution for EVERY group, and only decryption (FLA-only,
+diagnostic in this phase) reveals the resulting per-group tallies. This
+path is RETAINED, unchanged in behaviour, exclusively for the Phase 1
+equivalence check (``evaluation/run_compsim_removal_equivalence_check.py``)
+and historical/reproducibility tests
+(``tests/scientific/test_encrypted_aggregation.py``,
+``test_encrypted_aggregation_privacy.py``) -- it is no longer called by
+any evaluation script that represents the active production path.
+
+LEGACY ENCRYPTED-ZERO INITIALISATION (verified empirically, not assumed):
 TenSEAL's ``auto_mod_switch=True`` (default on every context this
 codebase creates) automatically reconciles the level mismatch between a
 FRESH, top-level zero ciphertext (``ts.ckks_vector(context, [0.0])``) and
@@ -75,9 +118,9 @@ This was verified directly: adding a fresh zero to a compSim output, and
 accumulating 38 sequential compSim outputs into a fresh-zero-initialised
 accumulator, both produced numerically correct results (absolute error
 ~2-3e-6, consistent with Phase 4's measured compSim noise) with no
-error and no manual level/rescale handling. Aggregates in this module are
-therefore initialised as fresh top-level zero ciphertexts -- NOT
-by copying the first contributing ciphertext (an alternative this
+error and no manual level/rescale handling. Legacy aggregates in this
+module are therefore initialised as fresh top-level zero ciphertexts --
+NOT by copying the first contributing ciphertext (an alternative this
 module's design note originally considered) and NOT by decrypting/
 re-encrypting to "fix" a level mismatch, since no such fix is needed.
 """
@@ -89,7 +132,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Sequence, Tuple
 import tenseal as ts
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-from fairlend.audit.similarity import LoadedReferenceVectors, comp_sim
+from fairlend.audit.similarity import LoadedReferenceVectors, comp_sim, load_verified_protected_attribute_vector
 from fairlend.core.exceptions import KeyBoundaryError, MalformedCiphertextError
 from fairlend.credentials.protected_attribute import ProtectedAttributeCredential
 from fairlend.crypto.ckks import context_can_decrypt
@@ -331,6 +374,13 @@ def compute_plaintext_audit(audit_frame: pd.DataFrame, model_name: str) -> Plain
 
 _STAT_NAMES: Tuple[str, ...] = ("C", "A", "P", "TP", "N", "FP")
 
+# LEGACY (Phase 5, compSim-based) packet's protocol-version string is
+# unchanged (``PROTOCOL_VERSION`` below); the NEW direct-addition packet
+# uses a distinct version string so a reader/consumer can always tell
+# which aggregation path produced a given wire packet from its own
+# metadata, never by guessing from field shape alone.
+PROTOCOL_VERSION_DIRECT = "fairlend/encrypted-audit-direct/v1"
+
 
 @dataclass(frozen=True)
 class EncryptedTestRecord:
@@ -356,9 +406,10 @@ class EncryptedTestRecord:
 
 
 @dataclass(frozen=True)
-class EncryptedGroupAuditCounts:
-    """One group's encrypted sufficient statistics. All six fields are
-    live ``ts.CKKSVector`` ciphertexts (size 1) -- never decrypted here."""
+class LegacyEncryptedGroupAuditCounts:
+    """LEGACY (Phase 5, compSim-based). One group's encrypted sufficient
+    statistics. All six fields are live ``ts.CKKSVector`` ciphertexts
+    (size 1) -- never decrypted here."""
 
     C: ts.CKKSVector
     A: ts.CKKSVector
@@ -369,33 +420,35 @@ class EncryptedGroupAuditCounts:
 
 
 @dataclass(frozen=True)
-class EncryptedAuditResult:
-    """LPU-side working result: ciphertexts still live under the LPU's
-    context. Convert to a transportable ``EncryptedAuditPacket`` via
-    ``build_encrypted_aggregate_packet`` before sending to the FLA."""
+class LegacyEncryptedAuditResult:
+    """LEGACY (Phase 5, compSim-based). LPU-side working result:
+    ciphertexts still live under the LPU's context. Convert to a
+    transportable ``LegacyEncryptedAuditPacket`` via
+    ``build_encrypted_aggregate_packet_legacy_compsim`` before sending to
+    the FLA."""
 
-    male: EncryptedGroupAuditCounts
-    female: EncryptedGroupAuditCounts
+    male: LegacyEncryptedGroupAuditCounts
+    female: LegacyEncryptedGroupAuditCounts
     model: str
     test_population_n: int
     resolved_test_n: int
     unresolved_test_n: int
 
 
-def compute_encrypted_audit(
+def compute_encrypted_audit_legacy_compsim(
     records: Sequence[EncryptedTestRecord],
     ip_public_key: Ed25519PublicKey,
     references: LoadedReferenceVectors,
     lpu_context: ts.Context,
     model_name: str,
-) -> EncryptedAuditResult:
-    """Manuscript Algorithm 5's encrypted aggregation: for every TEST
-    record, compute its encrypted group-membership similarity
-    (``comp_sim``, which itself verifies the IP's signature before
-    computing anything -- an invalid/tampered/substituted credential
-    aborts this whole call), then homomorphically add that similarity into
-    every aggregate the row's PLAINTEXT decision/outcome make it eligible
-    for:
+) -> LegacyEncryptedAuditResult:
+    """LEGACY (Phase 5, compSim-based) manuscript Algorithm 5 encrypted
+    aggregation: for every TEST record, compute its encrypted group-
+    membership similarity (``comp_sim``, which itself verifies the IP's
+    signature before computing anything -- an invalid/tampered/
+    substituted credential aborts this whole call), then homomorphically
+    add that similarity into every aggregate the row's PLAINTEXT
+    decision/outcome make it eligible for:
 
         always:                       C_k += s_i,k
         if y_pred == 1:                A_k += s_i,k
@@ -409,6 +462,12 @@ def compute_encrypted_audit(
     ciphertext), so structurally there is no code path where group
     membership influences control flow.
 
+    RETAINED ONLY for the Phase 1 equivalence check
+    (``evaluation/run_compsim_removal_equivalence_check.py``) and
+    historical/reproducibility tests -- the active production path is
+    ``compute_encrypted_audit`` (below), which does not call this
+    function or ``comp_sim``.
+
     Args:
         records: One ``EncryptedTestRecord`` per TEST row for this model,
             covering the TEST population exactly (validated by the
@@ -419,13 +478,13 @@ def compute_encrypted_audit(
             ``fairlend.audit.similarity.comp_sim``.
 
     Returns:
-        An ``EncryptedAuditResult`` whose six-times-two ciphertexts have
-        never been decrypted.
+        A ``LegacyEncryptedAuditResult`` whose six-times-two ciphertexts
+        have never been decrypted.
     """
     if context_can_decrypt(lpu_context):
         raise KeyBoundaryError(
-            "compute_encrypted_audit's lpu_context must not hold sk_HE -- "
-            "this is the LPU-side production aggregation path."
+            "compute_encrypted_audit_legacy_compsim's lpu_context must not hold "
+            "sk_HE -- this is the LPU-side production aggregation path."
         )
 
     accumulators: Dict[str, Dict[str, ts.CKKSVector]] = {
@@ -456,9 +515,9 @@ def compute_encrypted_audit(
             resolved_test_n += 1
 
     full_test_n = len(records)
-    return EncryptedAuditResult(
-        male=EncryptedGroupAuditCounts(**accumulators[GROUP_MALE]),
-        female=EncryptedGroupAuditCounts(**accumulators[GROUP_FEMALE]),
+    return LegacyEncryptedAuditResult(
+        male=LegacyEncryptedGroupAuditCounts(**accumulators[GROUP_MALE]),
+        female=LegacyEncryptedGroupAuditCounts(**accumulators[GROUP_FEMALE]),
         model=model_name,
         test_population_n=full_test_n,
         resolved_test_n=resolved_test_n,
@@ -467,8 +526,9 @@ def compute_encrypted_audit(
 
 
 @dataclass(frozen=True)
-class SerializedGroupAuditCounts:
-    """Serialized ciphertext bytes for one group's six aggregates."""
+class LegacySerializedGroupAuditCounts:
+    """LEGACY (Phase 5, compSim-based). Serialized ciphertext bytes for
+    one group's six aggregates."""
 
     C: bytes
     A: bytes
@@ -482,13 +542,14 @@ PROTOCOL_VERSION = "fairlend/encrypted-audit/v1"
 
 
 @dataclass(frozen=True)
-class EncryptedAuditPacket:
-    """The LPU -> FLA transport object.
+class LegacyEncryptedAuditPacket:
+    """LEGACY (Phase 5, compSim-based). The LPU -> FLA transport object.
 
     Contains ONLY: serialized ciphertext bytes for the six aggregate
-    statistics, per group, plus POPULATION-COUNT metadata (how many TEST
-    rows total/resolved/unresolved contributed -- an aggregate count, not
-    per-record data) and a model name/protocol version string.
+    statistics, per group (12 ciphertexts total), plus POPULATION-COUNT
+    metadata (how many TEST rows total/resolved/unresolved contributed --
+    an aggregate count, not per-record data) and a model name/protocol
+    version string.
 
     Deliberately absent (see tests/scientific/test_encrypted_aggregation_
     privacy.py for the exhaustive field-enumeration proof): uid, id,
@@ -498,8 +559,8 @@ class EncryptedAuditPacket:
     any nesting depth, is per-record.
     """
 
-    male: SerializedGroupAuditCounts
-    female: SerializedGroupAuditCounts
+    male: LegacySerializedGroupAuditCounts
+    female: LegacySerializedGroupAuditCounts
     model: str
     test_population_n: int
     resolved_test_n: int
@@ -507,8 +568,8 @@ class EncryptedAuditPacket:
     protocol_version: str = PROTOCOL_VERSION
 
 
-def _serialize_group(counts: EncryptedGroupAuditCounts) -> SerializedGroupAuditCounts:
-    return SerializedGroupAuditCounts(
+def _serialize_group_legacy(counts: LegacyEncryptedGroupAuditCounts) -> LegacySerializedGroupAuditCounts:
+    return LegacySerializedGroupAuditCounts(
         C=counts.C.serialize(),
         A=counts.A.serialize(),
         P=counts.P.serialize(),
@@ -518,14 +579,202 @@ def _serialize_group(counts: EncryptedGroupAuditCounts) -> SerializedGroupAuditC
     )
 
 
+def build_encrypted_aggregate_packet_legacy_compsim(result: LegacyEncryptedAuditResult) -> LegacyEncryptedAuditPacket:
+    """LEGACY (Phase 5, compSim-based). Serialize a
+    ``LegacyEncryptedAuditResult`` into the transportable, aggregate-only
+    ``LegacyEncryptedAuditPacket``. Does not decrypt anything; does not
+    touch ``lpu_context``; does not add any new field beyond what
+    ``LegacyEncryptedAuditPacket`` declares."""
+    return LegacyEncryptedAuditPacket(
+        male=_serialize_group_legacy(result.male),
+        female=_serialize_group_legacy(result.female),
+        model=result.model,
+        test_population_n=result.test_population_n,
+        resolved_test_n=result.resolved_test_n,
+        unresolved_test_n=result.unresolved_test_n,
+    )
+
+
+# ============================================================================
+# PHASE 1 (production): direct encrypted-additive aggregation, no compSim
+# ============================================================================
+
+
+@dataclass(frozen=True)
+class EncryptedAuditCounts:
+    """The six aggregate sufficient statistics, EACH a live, still-
+    encrypted 2-slot ``ts.CKKSVector`` (slot 0 = male, slot 1 = female) --
+    never decrypted here. Six ciphertexts total (half of the legacy
+    path's twelve), since both groups are packed into the same
+    accumulator per statistic."""
+
+    C: ts.CKKSVector
+    A: ts.CKKSVector
+    P: ts.CKKSVector
+    TP: ts.CKKSVector
+    N: ts.CKKSVector
+    FP: ts.CKKSVector
+
+
+@dataclass(frozen=True)
+class EncryptedAuditResult:
+    """LPU-side working result (Phase 1, direct addition): ciphertexts
+    still live under the LPU's context. Convert to a transportable
+    ``EncryptedAuditPacket`` via ``build_encrypted_aggregate_packet``
+    before sending to the FLA."""
+
+    counts: EncryptedAuditCounts
+    model: str
+    test_population_n: int
+    resolved_test_n: int
+    unresolved_test_n: int
+
+
+def compute_encrypted_audit(
+    records: Sequence[EncryptedTestRecord],
+    ip_public_key: Ed25519PublicKey,
+    lpu_context: ts.Context,
+    model_name: str,
+) -> EncryptedAuditResult:
+    """PHASE 1 (production): direct encrypted-additive aggregation.
+
+    For every TEST record, load and verify its protected-attribute
+    credential's own 2-slot ciphertext ``HE.g_i`` (via
+    ``fairlend.audit.similarity.load_verified_protected_attribute_vector``
+    -- an invalid/tampered/substituted credential aborts this whole call,
+    exactly as the legacy path's ``comp_sim`` call did), then
+    homomorphically ADD that ciphertext -- unmodified, no multiplication,
+    no reference vector -- into every aggregate the row's PLAINTEXT
+    decision/outcome make it eligible for:
+
+        always:                       HE.C  += HE.g_i
+        if y_pred == 1:                HE.A  += HE.g_i
+        if resolved and Y == 1:        HE.P  += HE.g_i
+        if resolved and Y == 0:        HE.N  += HE.g_i
+        if resolved and Y==1, pred==1: HE.TP += HE.g_i
+        if resolved and Y==0, pred==1: HE.FP += HE.g_i
+
+    Each accumulator's two SIMD slots track both groups simultaneously --
+    ``Dec(HE.C) = [C_m, C_f]`` -- so there is no group-keyed branching at
+    all: the LPU never learns, and never needs to know, which slot
+    corresponds to which group's actual count for a given row.
+
+    Multiplicative depth is 0 throughout this function: every ciphertext
+    involved (``HE.g_i`` and every accumulator) is a fresh, unmultiplied,
+    top-level CKKS ciphertext, so no relinearisation and no rescaling
+    occurs anywhere in this call.
+
+    Args:
+        records: One ``EncryptedTestRecord`` per TEST row for this model,
+            covering the TEST population exactly (validated by the
+            caller -- see ``evaluation/run_encrypted_audit.py`` -- before
+            this function ever runs).
+        lpu_context: The LPU's public CKKS context. Must NOT hold
+            ``sk_HE`` -- checked structurally, same invariant as the
+            legacy path.
+
+    Returns:
+        An ``EncryptedAuditResult`` whose six ciphertexts have never been
+        decrypted.
+    """
+    if context_can_decrypt(lpu_context):
+        raise KeyBoundaryError(
+            "compute_encrypted_audit's lpu_context must not hold sk_HE -- "
+            "this is the LPU-side production aggregation path."
+        )
+
+    accumulators: Dict[str, ts.CKKSVector] = {
+        stat: ts.ckks_vector(lpu_context, [0.0, 0.0]) for stat in _STAT_NAMES
+    }
+    resolved_test_n = 0
+
+    for record in records:
+        g_i = load_verified_protected_attribute_vector(record.credential, ip_public_key, lpu_context)
+
+        accumulators["C"] = accumulators["C"] + g_i
+        if record.y_pred == 1:
+            accumulators["A"] = accumulators["A"] + g_i
+        if record.y_true is not None:
+            if record.y_true == 1:
+                accumulators["P"] = accumulators["P"] + g_i
+                if record.y_pred == 1:
+                    accumulators["TP"] = accumulators["TP"] + g_i
+            elif record.y_true == 0:
+                accumulators["N"] = accumulators["N"] + g_i
+                if record.y_pred == 1:
+                    accumulators["FP"] = accumulators["FP"] + g_i
+            resolved_test_n += 1
+
+    full_test_n = len(records)
+    return EncryptedAuditResult(
+        counts=EncryptedAuditCounts(**accumulators),
+        model=model_name,
+        test_population_n=full_test_n,
+        resolved_test_n=resolved_test_n,
+        unresolved_test_n=full_test_n - resolved_test_n,
+    )
+
+
+@dataclass(frozen=True)
+class SerializedEncryptedAuditCounts:
+    """Serialized ciphertext bytes for the six 2-slot aggregate
+    statistics (Phase 1, direct addition)."""
+
+    C: bytes
+    A: bytes
+    P: bytes
+    TP: bytes
+    N: bytes
+    FP: bytes
+
+
+@dataclass(frozen=True)
+class EncryptedAuditPacket:
+    """PHASE 1 (production). The LPU -> FLA transport object.
+
+    Contains ONLY: serialized ciphertext bytes for the six aggregate
+    statistics (each a single 2-slot ciphertext covering BOTH groups --
+    six ciphertexts total, half of the legacy packet's twelve), plus
+    POPULATION-COUNT metadata (how many TEST rows total/resolved/
+    unresolved contributed -- an aggregate count, not per-record data)
+    and a model name/protocol version string.
+
+    Deliberately absent (mirrors the legacy packet's privacy proof, see
+    tests/scientific/test_encrypted_aggregation_direct.py): uid, id,
+    row_index, plaintext gender, synthetic gender label,
+    probability_female, account data, credit score, or any per-borrower
+    y_true/y_pred value. Nothing in this dataclass's fields is
+    per-record. There is no ``male``/``female`` nesting at all -- group
+    separation lives entirely in each ciphertext's own two SIMD slots,
+    never in the packet's field structure.
+    """
+
+    C: bytes
+    A: bytes
+    P: bytes
+    TP: bytes
+    N: bytes
+    FP: bytes
+    model: str
+    test_population_n: int
+    resolved_test_n: int
+    unresolved_test_n: int
+    protocol_version: str = PROTOCOL_VERSION_DIRECT
+
+
 def build_encrypted_aggregate_packet(result: EncryptedAuditResult) -> EncryptedAuditPacket:
-    """Serialize an ``EncryptedAuditResult`` into the transportable,
-    aggregate-only ``EncryptedAuditPacket``. Does not decrypt anything;
-    does not touch ``lpu_context``; does not add any new field beyond
-    what ``EncryptedAuditPacket`` declares."""
+    """PHASE 1 (production). Serialize an ``EncryptedAuditResult`` into
+    the transportable, aggregate-only ``EncryptedAuditPacket``. Does not
+    decrypt anything; does not touch ``lpu_context``; does not add any
+    new field beyond what ``EncryptedAuditPacket`` declares."""
+    counts = result.counts
     return EncryptedAuditPacket(
-        male=_serialize_group(result.male),
-        female=_serialize_group(result.female),
+        C=counts.C.serialize(),
+        A=counts.A.serialize(),
+        P=counts.P.serialize(),
+        TP=counts.TP.serialize(),
+        N=counts.N.serialize(),
+        FP=counts.FP.serialize(),
         model=result.model,
         test_population_n=result.test_population_n,
         resolved_test_n=result.resolved_test_n,
@@ -560,7 +809,12 @@ class DecryptedAuditPacket:
     unresolved_test_n: int
 
 
-def _decrypt_group(serialized: SerializedGroupAuditCounts, fla_context: ts.Context) -> DecryptedGroupAuditCounts:
+def _decrypt_group_legacy(
+    serialized: LegacySerializedGroupAuditCounts, fla_context: ts.Context
+) -> DecryptedGroupAuditCounts:
+    """LEGACY (Phase 5, compSim-based): each field is a size-1 ciphertext
+    (one group's share of one statistic)."""
+
     def _one(data: bytes, label: str) -> float:
         try:
             vector = ts.ckks_vector_from(fla_context, data)
@@ -580,15 +834,63 @@ def _decrypt_group(serialized: SerializedGroupAuditCounts, fla_context: ts.Conte
     )
 
 
+def decrypt_audit_packet_for_diagnostics_legacy_compsim(
+    packet: LegacyEncryptedAuditPacket, fla_context: ts.Context
+) -> DecryptedAuditPacket:
+    """LEGACY (Phase 5, compSim-based). FLA/EVALUATOR-ONLY diagnostic
+    decryption. Requires the FLA's private (``sk_HE``-holding) context;
+    never called from LPU-side production code.
+
+    Reports raw decrypted floats and their rounded integer form ONLY --
+    no DP/EO fairness metric is computed here (see
+    ``fairlend.audit.reconstruction``).
+    """
+    if not context_can_decrypt(fla_context):
+        raise KeyBoundaryError(
+            "decrypt_audit_packet_for_diagnostics_legacy_compsim requires the "
+            "FLA's private (sk_HE-holding) context; this is diagnostic/"
+            "evaluator-only code, never part of the LPU production path."
+        )
+    return DecryptedAuditPacket(
+        male=_decrypt_group_legacy(packet.male, fla_context),
+        female=_decrypt_group_legacy(packet.female, fla_context),
+        model=packet.model,
+        test_population_n=packet.test_population_n,
+        resolved_test_n=packet.resolved_test_n,
+        unresolved_test_n=packet.unresolved_test_n,
+    )
+
+
+def _decrypt_stat_pair(data: bytes, label: str, fla_context: ts.Context) -> Tuple[float, float]:
+    """PHASE 1 (direct addition): each field is a size-2 ciphertext
+    (BOTH groups' share of one statistic, packed as [male, female])."""
+    try:
+        vector = ts.ckks_vector_from(fla_context, data)
+    except ValueError as exc:
+        raise MalformedCiphertextError(f"aggregate {label}: failed to parse ciphertext bytes ({exc}).") from exc
+    if vector.size() != 2:
+        raise MalformedCiphertextError(f"aggregate {label} has {vector.size()} slot(s); expected 2.")
+    decrypted = vector.decrypt()
+    return decrypted[0], decrypted[1]
+
+
 def decrypt_audit_packet_for_diagnostics(packet: EncryptedAuditPacket, fla_context: ts.Context) -> DecryptedAuditPacket:
-    """FLA/EVALUATOR-ONLY diagnostic decryption. Requires the FLA's
-    private (``sk_HE``-holding) context; never called from LPU-side
-    production code (``compute_encrypted_audit``/
+    """PHASE 1 (production). FLA/EVALUATOR-ONLY diagnostic decryption.
+    Requires the FLA's private (``sk_HE``-holding) context; never called
+    from LPU-side production code (``compute_encrypted_audit``/
     ``build_encrypted_aggregate_packet`` above never call this).
 
-    Phase 5 scope: reports raw decrypted floats and their rounded integer
-    form ONLY -- no DP/EO fairness metric is computed here (that is a
-    later, separate phase; see docs/MANUSCRIPT_EVIDENCE_STATUS.md).
+    Each of the packet's six fields is a single 2-slot ciphertext
+    covering both groups; this function splits each one into its
+    male/female slot and reassembles the SAME ``DecryptedAuditPacket``/
+    ``DecryptedGroupAuditCounts`` shape the legacy path produces, so
+    every downstream consumer (``fairlend.audit.reconstruction``,
+    ``evaluation/run_fairness_reconstruction.py``) works identically
+    regardless of which aggregation path produced the packet.
+
+    Reports raw decrypted floats and their rounded integer form ONLY --
+    no DP/EO fairness metric is computed here (see
+    ``fairlend.audit.reconstruction``).
     """
     if not context_can_decrypt(fla_context):
         raise KeyBoundaryError(
@@ -596,9 +898,14 @@ def decrypt_audit_packet_for_diagnostics(packet: EncryptedAuditPacket, fla_conte
             "(sk_HE-holding) context; this is diagnostic/evaluator-only code, "
             "never part of the LPU production path."
         )
+    male_values: Dict[str, float] = {}
+    female_values: Dict[str, float] = {}
+    for stat in _STAT_NAMES:
+        male_values[stat], female_values[stat] = _decrypt_stat_pair(getattr(packet, stat), stat, fla_context)
+
     return DecryptedAuditPacket(
-        male=_decrypt_group(packet.male, fla_context),
-        female=_decrypt_group(packet.female, fla_context),
+        male=DecryptedGroupAuditCounts(**male_values),
+        female=DecryptedGroupAuditCounts(**female_values),
         model=packet.model,
         test_population_n=packet.test_population_n,
         resolved_test_n=packet.resolved_test_n,

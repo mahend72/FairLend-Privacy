@@ -1,5 +1,34 @@
 """compSim: encrypted protected-attribute similarity (manuscript Sec. 4.6).
 
+PHASE 1 STATUS (reviewer2_phase1_compsim_removal_report.md): compSim is
+mathematically redundant for the binary one-hot audit-aggregation path --
+with ``HE.r_m = Enc(1,0)``/``HE.r_f = Enc(0,1)``, ``comp_sim(HE.g_i,
+HE.r_m)`` is provably equal to ``Enc(g_i,m)`` (the credential's own first
+slot), so multiplying against a reference vector to "recompute" a value
+already sitting in the ciphertext is unnecessary. The production
+encrypted-audit-aggregation path
+(``fairlend.audit.aggregation.compute_encrypted_audit``) therefore no
+longer calls anything in this module; it accumulates the credential's own
+2-slot ciphertext directly via ``load_verified_protected_attribute_vector``
+below, using addition only (multiplicative depth 0).
+
+Everything else in this module is RETAINED, unchanged, for two reasons:
+  1. ``fairlend.audit.matching`` (matching-fidelity / delta* evaluation,
+     manuscript Sec. 6.1.2/6.4) still uses ``comp_sim`` for its own,
+     separate purpose -- classifying which reference vector a ciphertext
+     is closer to. That is a distinct evaluation question ("does this
+     ciphertext decrypt/match correctly") from fairness-audit aggregation
+     ("what are the group counts"), and removing it is out of Phase 1
+     scope (see reviewer2_phase1_compsim_removal_report.md's "Removed/
+     legacy components" section for the classification).
+  2. The legacy compSim-based aggregation path
+     (``fairlend.audit.aggregation.compute_encrypted_audit_legacy_compsim``)
+     still calls ``comp_sim`` directly, and is kept for the Phase 1
+     equivalence check (``evaluation/run_compsim_removal_equivalence_check.py``)
+     and for historical/reproducibility tests
+     (``tests/scientific/test_encrypted_aggregation.py``,
+     ``test_encrypted_aggregation_privacy.py``).
+
     HE.g_i = (HE.Enc(g_i,m), HE.Enc(g_i,f))       -- one CKKS ciphertext,
                                                        2 SIMD slots
     HE.r_m = (HE.Enc(1), HE.Enc(0))
@@ -236,6 +265,57 @@ class SerializedSimilarityPair:
     female_score_bytes: bytes
 
 
+def load_verified_protected_attribute_vector(
+    credential: ProtectedAttributeCredential,
+    ip_public_key: Ed25519PublicKey,
+    lpu_context: ts.Context,
+) -> ts.CKKSVector:
+    """Verify ``credential``'s IP signature and deserialize its ciphertext
+    into a live, still-encrypted 2-slot ``HE.g_i`` -- WITHOUT performing
+    compSim's multiplication against any reference vector.
+
+    This factors out exactly the "verify before touching ciphertext" and
+    "deserialize with an explicit shape check" steps that ``comp_sim``
+    (below) has always performed before its own multiplication, so that
+    the direct-addition encrypted-aggregation path
+    (``fairlend.audit.aggregation.compute_encrypted_audit``) can reuse the
+    identical verification/deserialization logic without depending on
+    compSim's similarity computation at all.
+
+    Args:
+        credential: The IP-issued ``ProtectedAttributeCredential`` --
+            NEVER a plaintext "male"/"female" string or a plaintext
+            one-hot vector.
+        ip_public_key: The issuing IP's Ed25519 public key (``pk_IP_sig``).
+        lpu_context: The LPU's public CKKS context. Must NOT hold
+            ``sk_HE`` -- checked structurally; raises ``KeyBoundaryError``
+            otherwise.
+
+    Returns:
+        The still-encrypted, unmultiplied 2-slot ``HE.g_i`` ciphertext
+        (slot 0 = male indicator, slot 1 = female indicator). This
+        function never decrypts anything and never returns a float.
+
+    Raises:
+        KeyBoundaryError: if ``lpu_context`` holds ``sk_HE``.
+        CredentialVerificationError: if the credential's IP signature does
+            not verify.
+        MalformedCiphertextError: if the credential's ciphertext bytes do
+            not deserialize into a 2-slot vector.
+    """
+    if context_can_decrypt(lpu_context):
+        raise KeyBoundaryError(
+            "load_verified_protected_attribute_vector's lpu_context must not "
+            "hold sk_HE -- this is the LPU-side production evaluation path."
+        )
+    if not credential.verify(ip_public_key):
+        raise CredentialVerificationError(
+            "protected-attribute credential failed IP signature verification; "
+            "refusing to touch its ciphertext."
+        )
+    return _deserialize_gender_vector(lpu_context, credential.ciphertext_bytes, "borrower protected-attribute (g_i)")
+
+
 def comp_sim(
     credential: ProtectedAttributeCredential,
     ip_public_key: Ed25519PublicKey,
@@ -243,6 +323,12 @@ def comp_sim(
     lpu_context: ts.Context,
 ) -> EncryptedSimilarityPair:
     """compSim(HE.g_i, HE.r_k) = sum_j HE(g_i,j) (x) HE(r_k,j), k in {m, f}.
+
+    LEGACY (Phase 1): no longer used by the production encrypted-audit-
+    aggregation path (see this module's docstring); still used by
+    ``fairlend.audit.matching`` (matching-fidelity evaluation) and by the
+    legacy compSim-based aggregation path retained for the Phase 1
+    equivalence check.
 
     Args:
         credential: The IP-issued ``ProtectedAttributeCredential`` --
@@ -266,20 +352,7 @@ def comp_sim(
         An ``EncryptedSimilarityPair`` -- both scores remain ciphertexts.
         This function never decrypts anything and never returns a float.
     """
-    if context_can_decrypt(lpu_context):
-        raise KeyBoundaryError(
-            "comp_sim's lpu_context must not hold sk_HE -- this is the LPU-side "
-            "production evaluation path. Use "
-            "decrypt_similarity_pair_for_diagnostics with the FLA's private "
-            "context for diagnostic decryption instead."
-        )
-    if not credential.verify(ip_public_key):
-        raise CredentialVerificationError(
-            "protected-attribute credential failed IP signature verification; "
-            "refusing to evaluate compSim on unauthenticated ciphertext."
-        )
-
-    g_i = _deserialize_gender_vector(lpu_context, credential.ciphertext_bytes, "borrower protected-attribute (g_i)")
+    g_i = load_verified_protected_attribute_vector(credential, ip_public_key, lpu_context)
     _assert_expected_size(references.male, GENDER_VECTOR_SIZE, "reference (r_m)")
     _assert_expected_size(references.female, GENDER_VECTOR_SIZE, "reference (r_f)")
 

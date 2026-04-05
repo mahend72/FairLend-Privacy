@@ -37,13 +37,20 @@ from fairlend.secure_compute.ckks import (
 from fairlend.secure_compute.encrypted_aggregation import (
     DecryptedAuditPacket,
     DecryptedGroupAuditCounts,
+    EncryptedAuditCounts,
     EncryptedAuditPacket,
     EncryptedAuditResult,
-    EncryptedGroupAuditCounts,
     EncryptedTestRecord,
+    LegacyEncryptedAuditPacket,
+    LegacyEncryptedAuditResult,
+    LegacyEncryptedGroupAuditCounts,
+    LegacySerializedGroupAuditCounts,
     build_encrypted_aggregate_packet,
+    build_encrypted_aggregate_packet_legacy_compsim,
     compute_encrypted_audit,
+    compute_encrypted_audit_legacy_compsim,
     decrypt_audit_packet_for_diagnostics,
+    decrypt_audit_packet_for_diagnostics_legacy_compsim,
 )
 from fairlend.secure_compute.reconstruction import (
     AggregateReconstructionResult,
@@ -78,7 +85,7 @@ __all__ = [
     "decrypt_similarity_pair_for_diagnostics",
     # audit/aggregation.py
     "EncryptedTestRecord",
-    "EncryptedGroupAuditCounts",
+    "EncryptedAuditCounts",
     "EncryptedAuditResult",
     "EncryptedAuditPacket",
     "DecryptedGroupAuditCounts",
@@ -86,6 +93,14 @@ __all__ = [
     "compute_encrypted_audit",
     "build_encrypted_aggregate_packet",
     "decrypt_audit_packet_for_diagnostics",
+    # audit/aggregation.py -- LEGACY (Phase 5, compSim-based)
+    "LegacyEncryptedGroupAuditCounts",
+    "LegacyEncryptedAuditResult",
+    "LegacyEncryptedAuditPacket",
+    "LegacySerializedGroupAuditCounts",
+    "compute_encrypted_audit_legacy_compsim",
+    "build_encrypted_aggregate_packet_legacy_compsim",
+    "decrypt_audit_packet_for_diagnostics_legacy_compsim",
     # audit/reconstruction.py
     "AggregateReconstructionResult",
     "FairnessReconstructionResult",
