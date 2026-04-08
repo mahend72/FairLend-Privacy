@@ -1,6 +1,18 @@
-"""Scientific invariant tests for the encrypted audit aggregation (Phase 5,
-manuscript Algorithm 5): C/A/P/TP/N/FP population logic, key-boundary
-enforcement, packet round-trip, and tamper/wrong-key rejection.
+"""LEGACY (Phase 5, compSim-based) scientific invariant tests for the
+encrypted audit aggregation (manuscript Algorithm 5 as originally
+implemented): C/A/P/TP/N/FP population logic, key-boundary enforcement,
+packet round-trip, and tamper/wrong-key rejection.
+
+PHASE 1 STATUS: as of the Phase 1 compSim-removal change
+(reviewer2_phase1_compsim_removal_report.md), this file exercises the
+LEGACY compSim-based aggregation path exclusively (imported below under
+its explicit ``_legacy_compsim``/``Legacy*`` names), retained unchanged
+for equivalence testing and historical reproducibility. It is NOT testing
+the active production path any more -- that is
+``tests/scientific/test_encrypted_aggregation_direct.py``. Nothing in
+this file's expected results was changed to accommodate Phase 1; every
+assertion here still describes the legacy compSim-based implementation
+exactly as before.
 
 Uses a hermetic, self-contained pipeline built from
 tests/fixtures/lendingclub_sample.csv via library calls (exactly the
@@ -24,9 +36,9 @@ import tenseal as ts
 from fairlend.audit.aggregation import (
     EncryptedTestRecord,
     build_audit_frame,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
-    decrypt_audit_packet_for_diagnostics,
+    build_encrypted_aggregate_packet_legacy_compsim as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_legacy_compsim as compute_encrypted_audit,
+    decrypt_audit_packet_for_diagnostics_legacy_compsim as decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.core.exceptions import CredentialVerificationError, KeyBoundaryError
 from fairlend.crypto.ckks import build_fla_context, context_can_decrypt, derive_lpu_context
