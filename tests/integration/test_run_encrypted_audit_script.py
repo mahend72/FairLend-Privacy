@@ -141,9 +141,9 @@ def test_encrypted_audit_uses_the_exact_frozen_predictions_file(scripts, pipelin
     captured = {}
     original_compute = scripts["encrypted_audit"].compute_encrypted_audit
 
-    def _spy(records, ip_public_key, references, lpu_context, model_name):
+    def _spy(records, ip_public_key, lpu_context, model_name):
         captured[model_name] = list(records)
-        return original_compute(records, ip_public_key, references, lpu_context, model_name)
+        return original_compute(records, ip_public_key, lpu_context, model_name)
 
     monkeypatch.setattr(scripts["encrypted_audit"], "compute_encrypted_audit", _spy)
 
