@@ -2,6 +2,17 @@
 """Phase 11: reproducible runtime and communication-size benchmarking of
 the REBUILT FairLend implementation.
 
+PHASE 1 NOTE (compSim removal, reviewer2_phase1_compsim_removal_report.md):
+this script deliberately continues to benchmark the LEGACY compSim-based
+aggregation path (imported here under its original names via explicit
+``_legacy_compsim`` aliasing) so that ``results/benchmarks/*.csv``
+remain exactly reproducible from this script unchanged. It does not yet
+benchmark the new direct-addition production path
+(``fairlend.audit.aggregation.compute_encrypted_audit``) -- that is
+follow-up work, not required to validate the Phase 1 architectural
+change itself (see the Phase 1 report's "Impact on existing result
+artifacts" section).
+
 Every timing benchmark calls the actual production functions
 (``fairlend.crypto``/``fairlend.audit``/``fairlend.roles``) unmodified --
 this script adds no new cryptographic or protocol behaviour, only
@@ -47,9 +58,9 @@ from fairlend.audit.aggregation import (
     EncryptedTestRecord,
     GroupAuditCounts,
     PlaintextAuditResult,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
-    decrypt_audit_packet_for_diagnostics,
+    build_encrypted_aggregate_packet_legacy_compsim as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_legacy_compsim as compute_encrypted_audit,
+    decrypt_audit_packet_for_diagnostics_legacy_compsim as decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.audit.fairness import compute_demographic_parity, compute_equalised_odds
 from fairlend.audit.similarity import comp_sim, generate_encrypted_references, load_reference_vectors
