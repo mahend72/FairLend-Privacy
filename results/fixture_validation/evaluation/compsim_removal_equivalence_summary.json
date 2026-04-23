@@ -1,0 +1,32 @@
+{
+  "per_model": [
+    {
+      "DP_direct": 0.10526315789473684,
+      "DP_direct_matches_plain": true,
+      "DP_legacy_compsim": 0.10526315789473684,
+      "DP_legacy_matches_plain": true,
+      "DP_plain": 0.10526315789473684,
+      "EO_direct": 0.25,
+      "EO_direct_matches_plain": true,
+      "EO_legacy_compsim": 0.25,
+      "EO_legacy_matches_plain": true,
+      "EO_plain": 0.25,
+      "model": "logistic_regression",
+      "n_records": 38
+    },
+    {
+      "DP_direct": 0.0,
+      "DP_direct_matches_plain": true,
+      "DP_legacy_compsim": 0.0,
+      "DP_legacy_matches_plain": true,
+      "DP_plain": 0.0,
+      "EO_direct": 0.0,
+      "EO_direct_matches_plain": true,
+      "EO_legacy_compsim": 0.0,
+      "EO_legacy_matches_plain": true,
+      "EO_plain": 0.0,
+      "model": "random_forest",
+      "n_records": 38
+    }
+  ]
+}
