@@ -41,3 +41,16 @@ class MalformedCiphertextError(FairLendError):
     result with no error at all. Code in this package must never rely on
     the library to catch that; it checks shape explicitly first.
     """
+
+
+class BFVOverflowError(FairLendError):
+    """Raised when a planned BFV audit population could exceed
+    ``fairlend.core.config.BFVConfig.max_safe_count`` -- i.e. an
+    aggregate statistic could accumulate past the point where BFV's
+    SIGNED plaintext decoding still returns the true non-negative count
+    (see ``BFVConfig``'s docstring for the empirically-verified signed-
+    decoding behaviour). This exists so a too-large population is
+    refused explicitly (Phase 2, reviewer2_phase2_bfv_migration_report.md,
+    task item 14) rather than silently wrapping into a wrong -- possibly
+    negative -- decrypted value.
+    """

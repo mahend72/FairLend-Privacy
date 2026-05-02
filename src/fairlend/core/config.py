@@ -39,6 +39,69 @@ class CKKSConfig:
 
 
 @dataclass(frozen=True)
+class BFVConfig:
+    """BFV parameters for the Phase 2 active (direct-addition) aggregation
+    path (reviewer2_phase2_bfv_migration_report.md).
+
+    Derived from the actual FairLend workload, not copied from an
+    unrelated example:
+
+    - ``poly_modulus_degree=8192`` matches the CKKS configuration above,
+      for direct comparability between the two schemes at the same ring
+      dimension. This codebase never needs more than 2 SIMD slots (one
+      per protected-attribute group), so 8192 is not a batching-capacity
+      requirement -- it is kept equal to CKKS's setting solely so a
+      CKKS-vs-BFV benchmark/serialization comparison holds the ring
+      dimension fixed and varies only the scheme.
+    - ``plain_modulus=33832961`` is the smallest prime >= 2**25 that is
+      ALSO congruent to 1 mod (2 * poly_modulus_degree) = 16384, i.e. the
+      smallest batching-compatible ("NTT-friendly") prime at or above a
+      2**25 safety target. TenSEAL's ``bfv_vector`` raises
+      ``ValueError: encryption parameters are not valid for batching`` for
+      any non-batching-compatible plain_modulus -- verified empirically,
+      not assumed (see reviewer2_phase2_bfv_migration_report.md's
+      "Confirm BFV support" section).
+    - ``coeff_mod_bit_sizes`` is deliberately left unset (empty list):
+      TenSEAL/SEAL then selects its own default coefficient-modulus
+      chain for ``poly_modulus_degree``, which targets SEAL's default
+      128-bit security level (``sec_level_type::tc128``) -- this
+      codebase does not hand-pick a coefficient modulus for BFV
+      precisely so it never accidentally weakens (or gratuitously
+      strengthens, at a size/performance cost) that default. This
+      default's exact bit-length could not be introspected via the
+      installed TenSEAL 0.3.17 Python API (no accessor exposes SEAL's
+      ``EncryptionParameters``/``SEALContext`` internals) -- documented
+      as a verified LIMITATION, not silently assumed away.
+
+    IMPORTANT -- BFV plaintext decoding is SIGNED, not unsigned (verified
+    empirically): a value ``v`` in ``[0, plain_modulus)`` decodes as ``v``
+    if ``v <= (plain_modulus - 1) // 2``, and as ``v - plain_modulus``
+    (a negative number) otherwise. The SAFE representable range for a
+    non-negative aggregate count is therefore ``[0, max_safe_count]``,
+    NOT ``[0, plain_modulus - 1]`` -- see ``max_safe_count`` below, and
+    ``tests/scientific/test_bfv_overflow.py`` for the empirical
+    verification this codebase relies on rather than assumes.
+    """
+
+    poly_modulus_degree: int = 8192
+    plain_modulus: int = 33832961
+    coeff_mod_bit_sizes: List[int] = field(default_factory=list)
+
+    @property
+    def max_safe_count(self) -> int:
+        """The largest non-negative integer aggregate count guaranteed to
+        decrypt as itself (not wrap into a negative number) under this
+        plaintext modulus's SIGNED decoding -- ``(plain_modulus - 1) //
+        2``, not ``plain_modulus - 1``. At the default parameters this is
+        16,916,480: roughly 19x the largest population this codebase has
+        ever processed (887,440, the full cleaned LendingClub audit-
+        eligible population -- see docs/FINAL_REPRODUCIBLE_RESULTS.md)
+        and roughly 7.5x the raw, unfiltered dataset row count
+        (2,260,701)."""
+        return (self.plain_modulus - 1) // 2
+
+
+@dataclass(frozen=True)
 class DatasetSplitConfig:
     """Dataset location and train/validation/test split settings.
 
