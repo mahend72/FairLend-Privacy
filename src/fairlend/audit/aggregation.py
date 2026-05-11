@@ -28,11 +28,20 @@ small hand-built DataFrame without needing a real join.
 
 ---
 
-ENCRYPTED PATH -- Phase 1 (compSim removal, current production path) and
-LEGACY Phase 5 (compSim-based, retained for equivalence testing and
-reproducibility) are BOTH defined below. Nothing above this point
-(the plaintext API) is modified by either, and its behaviour/tests are
-unaffected.
+ENCRYPTED PATH -- three conceptually distinguishable implementations are
+defined below, per reviewer2_phase2_bfv_migration_report.md:
+
+    1. LEGACY   (Phase 5): CKKS + compSim.
+    2. PHASE-1 BASELINE:   CKKS + direct additive aggregation.
+    3. ACTIVE   (Phase 2): BFV + direct additive aggregation.
+
+Nothing above this point (the plaintext API) is modified by any of them,
+and its behaviour/tests are unaffected. ``compute_encrypted_audit`` (no
+suffix) is the ACTIVE path as of Phase 2 -- BFV, not CKKS; the Phase 1
+CKKS-direct baseline is retained under its own explicit
+``*_ckks_direct``/``CKKSDirect*`` names (renamed from Phase 1's bare
+canonical names when Phase 2 introduced BFV as the new active scheme) for
+the CKKS-vs-BFV differential comparison this report documents.
 
 PHASE 1 (production, ``compute_encrypted_audit`` / ``EncryptedAuditPacket``
 / ``EncryptedAuditCounts``): reviewer2_implementation_gap_audit.md
@@ -133,9 +142,16 @@ import tenseal as ts
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 from fairlend.audit.similarity import LoadedReferenceVectors, comp_sim, load_verified_protected_attribute_vector
-from fairlend.core.exceptions import KeyBoundaryError, MalformedCiphertextError
+from fairlend.core.config import BFVConfig
+from fairlend.core.exceptions import (
+    BFVOverflowError,
+    CredentialVerificationError,
+    KeyBoundaryError,
+    MalformedCiphertextError,
+)
 from fairlend.credentials.protected_attribute import ProtectedAttributeCredential
 from fairlend.crypto.ckks import context_can_decrypt
+from fairlend.crypto import bfv as bfv_crypto
 
 if TYPE_CHECKING:
     # pandas is an evaluation-extra dependency (see pyproject.toml), not a
@@ -379,7 +395,8 @@ _STAT_NAMES: Tuple[str, ...] = ("C", "A", "P", "TP", "N", "FP")
 # uses a distinct version string so a reader/consumer can always tell
 # which aggregation path produced a given wire packet from its own
 # metadata, never by guessing from field shape alone.
-PROTOCOL_VERSION_DIRECT = "fairlend/encrypted-audit-direct/v1"
+PROTOCOL_VERSION_DIRECT = "fairlend/encrypted-audit-ckks-direct/v1"
+PROTOCOL_VERSION_BFV = "fairlend/encrypted-audit-bfv-direct/v1"
 
 
 @dataclass(frozen=True)
@@ -601,11 +618,13 @@ def build_encrypted_aggregate_packet_legacy_compsim(result: LegacyEncryptedAudit
 
 
 @dataclass(frozen=True)
-class EncryptedAuditCounts:
-    """The six aggregate sufficient statistics, EACH a live, still-
-    encrypted 2-slot ``ts.CKKSVector`` (slot 0 = male, slot 1 = female) --
-    never decrypted here. Six ciphertexts total (half of the legacy
-    path's twelve), since both groups are packed into the same
+class CKKSDirectAuditCounts:
+    """PHASE 1 BASELINE (CKKS, direct addition -- no longer the ACTIVE
+    protocol as of Phase 2, retained for the CKKS-vs-BFV differential
+    comparison). The six aggregate sufficient statistics, EACH a live,
+    still-encrypted 2-slot ``ts.CKKSVector`` (slot 0 = male, slot 1 =
+    female) -- never decrypted here. Six ciphertexts total (half of the
+    legacy path's twelve), since both groups are packed into the same
     accumulator per statistic."""
 
     C: ts.CKKSVector
@@ -617,26 +636,31 @@ class EncryptedAuditCounts:
 
 
 @dataclass(frozen=True)
-class EncryptedAuditResult:
-    """LPU-side working result (Phase 1, direct addition): ciphertexts
-    still live under the LPU's context. Convert to a transportable
-    ``EncryptedAuditPacket`` via ``build_encrypted_aggregate_packet``
-    before sending to the FLA."""
+class CKKSDirectAuditResult:
+    """PHASE 1 BASELINE. LPU-side working result: ciphertexts still live
+    under the LPU's context. Convert to a transportable
+    ``CKKSDirectAuditPacket`` via
+    ``build_encrypted_aggregate_packet_ckks_direct`` before sending to
+    the FLA."""
 
-    counts: EncryptedAuditCounts
+    counts: CKKSDirectAuditCounts
     model: str
     test_population_n: int
     resolved_test_n: int
     unresolved_test_n: int
 
 
-def compute_encrypted_audit(
+def compute_encrypted_audit_ckks_direct(
     records: Sequence[EncryptedTestRecord],
     ip_public_key: Ed25519PublicKey,
     lpu_context: ts.Context,
     model_name: str,
-) -> EncryptedAuditResult:
-    """PHASE 1 (production): direct encrypted-additive aggregation.
+) -> CKKSDirectAuditResult:
+    """PHASE 1 BASELINE (CKKS, direct encrypted-additive aggregation --
+    superseded as the ACTIVE protocol by the BFV implementation below in
+    Phase 2, retained unchanged as the CKKS side of the CKKS-vs-BFV
+    differential comparison; see
+    reviewer2_phase2_bfv_migration_report.md).
 
     For every TEST record, load and verify its protected-attribute
     credential's own 2-slot ciphertext ``HE.g_i`` (via
@@ -674,13 +698,13 @@ def compute_encrypted_audit(
             legacy path.
 
     Returns:
-        An ``EncryptedAuditResult`` whose six ciphertexts have never been
+        A ``CKKSDirectAuditResult`` whose six ciphertexts have never been
         decrypted.
     """
     if context_can_decrypt(lpu_context):
         raise KeyBoundaryError(
-            "compute_encrypted_audit's lpu_context must not hold sk_HE -- "
-            "this is the LPU-side production aggregation path."
+            "compute_encrypted_audit_ckks_direct's lpu_context must not hold "
+            "sk_HE -- this is the LPU-side production aggregation path."
         )
 
     accumulators: Dict[str, ts.CKKSVector] = {
@@ -706,8 +730,8 @@ def compute_encrypted_audit(
             resolved_test_n += 1
 
     full_test_n = len(records)
-    return EncryptedAuditResult(
-        counts=EncryptedAuditCounts(**accumulators),
+    return CKKSDirectAuditResult(
+        counts=CKKSDirectAuditCounts(**accumulators),
         model=model_name,
         test_population_n=full_test_n,
         resolved_test_n=resolved_test_n,
@@ -716,9 +740,9 @@ def compute_encrypted_audit(
 
 
 @dataclass(frozen=True)
-class SerializedEncryptedAuditCounts:
+class SerializedCKKSDirectAuditCounts:
     """Serialized ciphertext bytes for the six 2-slot aggregate
-    statistics (Phase 1, direct addition)."""
+    statistics (Phase 1 baseline, CKKS direct addition)."""
 
     C: bytes
     A: bytes
@@ -729,8 +753,8 @@ class SerializedEncryptedAuditCounts:
 
 
 @dataclass(frozen=True)
-class EncryptedAuditPacket:
-    """PHASE 1 (production). The LPU -> FLA transport object.
+class CKKSDirectAuditPacket:
+    """PHASE 1 BASELINE. The LPU -> FLA transport object.
 
     Contains ONLY: serialized ciphertext bytes for the six aggregate
     statistics (each a single 2-slot ciphertext covering BOTH groups --
@@ -762,13 +786,13 @@ class EncryptedAuditPacket:
     protocol_version: str = PROTOCOL_VERSION_DIRECT
 
 
-def build_encrypted_aggregate_packet(result: EncryptedAuditResult) -> EncryptedAuditPacket:
-    """PHASE 1 (production). Serialize an ``EncryptedAuditResult`` into
-    the transportable, aggregate-only ``EncryptedAuditPacket``. Does not
+def build_encrypted_aggregate_packet_ckks_direct(result: CKKSDirectAuditResult) -> CKKSDirectAuditPacket:
+    """PHASE 1 BASELINE. Serialize a ``CKKSDirectAuditResult`` into the
+    transportable, aggregate-only ``CKKSDirectAuditPacket``. Does not
     decrypt anything; does not touch ``lpu_context``; does not add any
-    new field beyond what ``EncryptedAuditPacket`` declares."""
+    new field beyond what ``CKKSDirectAuditPacket`` declares."""
     counts = result.counts
-    return EncryptedAuditPacket(
+    return CKKSDirectAuditPacket(
         C=counts.C.serialize(),
         A=counts.A.serialize(),
         P=counts.P.serialize(),
@@ -861,9 +885,10 @@ def decrypt_audit_packet_for_diagnostics_legacy_compsim(
     )
 
 
-def _decrypt_stat_pair(data: bytes, label: str, fla_context: ts.Context) -> Tuple[float, float]:
-    """PHASE 1 (direct addition): each field is a size-2 ciphertext
-    (BOTH groups' share of one statistic, packed as [male, female])."""
+def _decrypt_stat_pair_ckks(data: bytes, label: str, fla_context: ts.Context) -> Tuple[float, float]:
+    """PHASE 1 BASELINE (CKKS direct addition): each field is a size-2
+    ciphertext (BOTH groups' share of one statistic, packed as [male,
+    female])."""
     try:
         vector = ts.ckks_vector_from(fla_context, data)
     except ValueError as exc:
@@ -874,19 +899,20 @@ def _decrypt_stat_pair(data: bytes, label: str, fla_context: ts.Context) -> Tupl
     return decrypted[0], decrypted[1]
 
 
-def decrypt_audit_packet_for_diagnostics(packet: EncryptedAuditPacket, fla_context: ts.Context) -> DecryptedAuditPacket:
-    """PHASE 1 (production). FLA/EVALUATOR-ONLY diagnostic decryption.
+def decrypt_audit_packet_for_diagnostics_ckks_direct(
+    packet: CKKSDirectAuditPacket, fla_context: ts.Context
+) -> DecryptedAuditPacket:
+    """PHASE 1 BASELINE. FLA/EVALUATOR-ONLY diagnostic decryption.
     Requires the FLA's private (``sk_HE``-holding) context; never called
-    from LPU-side production code (``compute_encrypted_audit``/
-    ``build_encrypted_aggregate_packet`` above never call this).
+    from LPU-side production code.
 
     Each of the packet's six fields is a single 2-slot ciphertext
     covering both groups; this function splits each one into its
     male/female slot and reassembles the SAME ``DecryptedAuditPacket``/
-    ``DecryptedGroupAuditCounts`` shape the legacy path produces, so
-    every downstream consumer (``fairlend.audit.reconstruction``,
-    ``evaluation/run_fairness_reconstruction.py``) works identically
-    regardless of which aggregation path produced the packet.
+    ``DecryptedGroupAuditCounts`` shape every other path (legacy, BFV)
+    also produces, so every downstream consumer
+    (``fairlend.audit.reconstruction``) works identically regardless of
+    which aggregation path produced the packet.
 
     Reports raw decrypted floats and their rounded integer form ONLY --
     no DP/EO fairness metric is computed here (see
@@ -894,14 +920,354 @@ def decrypt_audit_packet_for_diagnostics(packet: EncryptedAuditPacket, fla_conte
     """
     if not context_can_decrypt(fla_context):
         raise KeyBoundaryError(
-            "decrypt_audit_packet_for_diagnostics requires the FLA's private "
-            "(sk_HE-holding) context; this is diagnostic/evaluator-only code, "
-            "never part of the LPU production path."
+            "decrypt_audit_packet_for_diagnostics_ckks_direct requires the "
+            "FLA's private (sk_HE-holding) context; this is diagnostic/"
+            "evaluator-only code, never part of the LPU production path."
         )
     male_values: Dict[str, float] = {}
     female_values: Dict[str, float] = {}
     for stat in _STAT_NAMES:
-        male_values[stat], female_values[stat] = _decrypt_stat_pair(getattr(packet, stat), stat, fla_context)
+        male_values[stat], female_values[stat] = _decrypt_stat_pair_ckks(getattr(packet, stat), stat, fla_context)
+
+    return DecryptedAuditPacket(
+        male=DecryptedGroupAuditCounts(**male_values),
+        female=DecryptedGroupAuditCounts(**female_values),
+        model=packet.model,
+        test_population_n=packet.test_population_n,
+        resolved_test_n=packet.resolved_test_n,
+        unresolved_test_n=packet.unresolved_test_n,
+    )
+
+
+# ============================================================================
+# PHASE 2 (ACTIVE): BFV direct-additive aggregation
+# ============================================================================
+#
+# reviewer2_phase2_bfv_migration_report.md: the active protocol performs
+# only exact integer one-hot addition and releases integer aggregate
+# counts -- BFV's native domain. This section is architecturally IDENTICAL
+# to the CKKS-direct baseline above (same control flow, same population
+# rules, same packet shape philosophy) -- ONLY the homomorphic scheme
+# differs. Every function/class name below has no CKKS/BFV suffix,
+# because these ARE the canonical ``compute_encrypted_audit`` /
+# ``EncryptedAuditPacket`` names as of Phase 2 -- the CKKS-direct
+# baseline these superseded is preserved above under its explicit
+# ``*_ckks_direct``/``CKKSDirect*`` names for the differential comparison.
+#
+# NO CKKS-SPECIFIC BEHAVIOUR IS PRESENT HERE: no floating-point scale, no
+# rescaling, no approximation tolerance, no rounding needed to recover
+# integer counts (BFV decryption returns exact integers), no ciphertext
+# multiplication, no relinearisation, multiplicative depth 0 -- verified
+# in tests/scientific/test_encrypted_aggregation_bfv.py exactly as the
+# CKKS-direct path's own structural tests verify the analogous claims for
+# CKKS.
+#
+# OVERFLOW GUARD (task item 14): BFV arithmetic is exact modulo
+# ``plain_modulus``, with SIGNED decoding (see
+# ``fairlend.core.config.BFVConfig.max_safe_count``'s docstring for the
+# empirically-verified signed-decoding behaviour this guard protects
+# against). Since no single aggregate statistic can exceed the number of
+# records processed in one call, checking ``len(records) <=
+# max_safe_count`` up front is sufficient and is enforced structurally
+# below -- ``compute_encrypted_audit`` refuses (raises
+# ``BFVOverflowError``) rather than silently wrapping.
+
+
+def assert_population_within_bfv_safe_bound(
+    population_size: int, config: BFVConfig | None = None
+) -> None:
+    """Validates a planned audit population BEFORE any BFV aggregation
+    begins. Raises ``BFVOverflowError`` if ``population_size`` could ever
+    produce an aggregate count that wraps under this codebase's chosen
+    plaintext modulus's SIGNED decoding -- see ``BFVConfig.max_safe_count``.
+    Exposed as a standalone function so callers (e.g. a future real-data
+    evaluation script) can validate a planned run's size before issuing
+    any credentials, not only inside ``compute_encrypted_audit`` itself."""
+    config = config or BFVConfig()
+    if population_size > config.max_safe_count:
+        raise BFVOverflowError(
+            f"Planned audit population ({population_size}) exceeds this BFV "
+            f"parameterisation's max safe count ({config.max_safe_count} = "
+            f"(plain_modulus - 1) // 2 for plain_modulus="
+            f"{config.plain_modulus}). Aggregating this many records could "
+            "silently wrap a statistic's true value into a different "
+            "(possibly negative) decoded integer. Choose a larger "
+            "plain_modulus (see BFVConfig) before processing a population "
+            "this large."
+        )
+
+
+@dataclass(frozen=True)
+class BFVAuditCounts:
+    """PHASE 2 (ACTIVE). The six aggregate sufficient statistics, EACH a
+    live, still-encrypted 2-slot ``ts.BFVVector`` (slot 0 = male, slot 1 =
+    female) -- never decrypted here. Six ciphertexts total, structurally
+    identical in shape to ``CKKSDirectAuditCounts``, just a different
+    scheme."""
+
+    C: ts.BFVVector
+    A: ts.BFVVector
+    P: ts.BFVVector
+    TP: ts.BFVVector
+    N: ts.BFVVector
+    FP: ts.BFVVector
+
+
+@dataclass(frozen=True)
+class BFVAuditResult:
+    """PHASE 2 (ACTIVE). LPU-side working result: ciphertexts still live
+    under the LPU's context. Convert to a transportable
+    ``BFVAuditPacket`` via ``build_encrypted_aggregate_packet`` before
+    sending to the FLA."""
+
+    counts: BFVAuditCounts
+    model: str
+    test_population_n: int
+    resolved_test_n: int
+    unresolved_test_n: int
+
+
+def _load_verified_protected_attribute_vector_bfv(
+    credential: ProtectedAttributeCredential, ip_public_key: Ed25519PublicKey, lpu_context: ts.Context
+) -> ts.BFVVector:
+    """BFV counterpart of
+    ``fairlend.audit.similarity.load_verified_protected_attribute_vector``
+    -- verify the credential's IP signature, then deserialize its
+    ciphertext bytes into a live 2-slot ``ts.BFVVector``. Never
+    multiplies, never decrypts. Kept local to this module (rather than
+    added to ``fairlend.audit.similarity``, which is specifically about
+    the compSim/similarity concept that has no BFV counterpart -- the
+    active protocol never computes a similarity score at all)."""
+    if bfv_crypto.context_can_decrypt(lpu_context):
+        raise KeyBoundaryError(
+            "compute_encrypted_audit's lpu_context must not hold the BFV "
+            "secret key -- this is the LPU-side production aggregation path."
+        )
+    if not credential.verify(ip_public_key):
+        raise CredentialVerificationError(
+            "protected-attribute credential failed IP signature verification; "
+            "refusing to touch its ciphertext."
+        )
+    try:
+        vector = ts.bfv_vector_from(lpu_context, credential.ciphertext_bytes)
+    except ValueError as exc:
+        raise MalformedCiphertextError(
+            f"borrower protected-attribute (g_i): failed to parse ciphertext bytes ({exc})."
+        ) from exc
+    if vector.size() != 2:
+        raise MalformedCiphertextError(
+            f"borrower protected-attribute (g_i) ciphertext has {vector.size()} slot(s); expected exactly 2."
+        )
+    return vector
+
+
+def compute_encrypted_audit(
+    records: Sequence[EncryptedTestRecord],
+    ip_public_key: Ed25519PublicKey,
+    lpu_context: ts.Context,
+    model_name: str,
+    *,
+    bfv_config: BFVConfig | None = None,
+) -> BFVAuditResult:
+    """PHASE 2 (ACTIVE): direct encrypted-additive aggregation over BFV.
+
+    Architecturally identical to
+    ``compute_encrypted_audit_ckks_direct`` -- for every TEST record,
+    load and verify its protected-attribute credential's own 2-slot BFV
+    ciphertext ``HE.g_i``, then homomorphically ADD it (no multiplication,
+    no reference vector) into every aggregate the row's PLAINTEXT
+    decision/outcome make it eligible for:
+
+        always:                       HE.C  += HE.g_i
+        if y_pred == 1:                HE.A  += HE.g_i
+        if resolved and Y == 1:        HE.P  += HE.g_i
+        if resolved and Y == 0:        HE.N  += HE.g_i
+        if resolved and Y==1, pred==1: HE.TP += HE.g_i
+        if resolved and Y==0, pred==1: HE.FP += HE.g_i
+
+    Decryption of any of the six resulting ciphertexts yields the EXACT
+    integer pair ``[stat_m, stat_f]`` -- no CKKS-style approximation, no
+    rounding. Multiplicative depth 0 throughout (no relinearisation, no
+    rescaling -- BFV has no rescaling operation to begin with).
+
+    Validates ``len(records)`` against
+    ``BFVConfig.max_safe_count`` BEFORE issuing any homomorphic operation
+    (task item 14) -- raises ``BFVOverflowError`` rather than silently
+    wrapping a statistic.
+
+    Args:
+        records: One ``EncryptedTestRecord`` per TEST row for this model.
+        lpu_context: The LPU's public BFV context. Must NOT hold the BFV
+            secret key -- checked structurally.
+        bfv_config: Only consulted for its ``max_safe_count`` overflow
+            guard; defaults to ``BFVConfig()``, which MUST match the
+            parameters ``lpu_context`` was actually built with (this
+            function has no way to introspect a ``ts.Context``'s own
+            plain_modulus -- see reviewer2_phase2_bfv_migration_report.md's
+            "Confirm BFV support" section on this API limitation).
+
+    Returns:
+        A ``BFVAuditResult`` whose six ciphertexts have never been
+        decrypted.
+    """
+    if bfv_crypto.context_can_decrypt(lpu_context):
+        raise KeyBoundaryError(
+            "compute_encrypted_audit's lpu_context must not hold the BFV "
+            "secret key -- this is the LPU-side production aggregation path."
+        )
+    assert_population_within_bfv_safe_bound(len(records), bfv_config)
+
+    accumulators: Dict[str, ts.BFVVector] = {
+        stat: ts.bfv_vector(lpu_context, [0, 0]) for stat in _STAT_NAMES
+    }
+    resolved_test_n = 0
+
+    for record in records:
+        g_i = _load_verified_protected_attribute_vector_bfv(record.credential, ip_public_key, lpu_context)
+
+        accumulators["C"] = accumulators["C"] + g_i
+        if record.y_pred == 1:
+            accumulators["A"] = accumulators["A"] + g_i
+        if record.y_true is not None:
+            if record.y_true == 1:
+                accumulators["P"] = accumulators["P"] + g_i
+                if record.y_pred == 1:
+                    accumulators["TP"] = accumulators["TP"] + g_i
+            elif record.y_true == 0:
+                accumulators["N"] = accumulators["N"] + g_i
+                if record.y_pred == 1:
+                    accumulators["FP"] = accumulators["FP"] + g_i
+            resolved_test_n += 1
+
+    full_test_n = len(records)
+    return BFVAuditResult(
+        counts=BFVAuditCounts(**accumulators),
+        model=model_name,
+        test_population_n=full_test_n,
+        resolved_test_n=resolved_test_n,
+        unresolved_test_n=full_test_n - resolved_test_n,
+    )
+
+
+@dataclass(frozen=True)
+class SerializedBFVAuditCounts:
+    """Serialized ciphertext bytes for the six 2-slot BFV aggregate
+    statistics (Phase 2, ACTIVE)."""
+
+    C: bytes
+    A: bytes
+    P: bytes
+    TP: bytes
+    N: bytes
+    FP: bytes
+
+
+# CANONICAL (Phase 2) names -- plain aliases, not separate types, so
+# isinstance()/dataclasses.fields() introspection behave identically
+# whether code refers to ``EncryptedAuditCounts`` or ``BFVAuditCounts``.
+EncryptedAuditCounts = BFVAuditCounts
+EncryptedAuditResult = BFVAuditResult
+
+
+@dataclass(frozen=True)
+class EncryptedAuditPacket:
+    """PHASE 2 (ACTIVE). The LPU -> FLA transport object -- BFV-backed.
+
+    Contains ONLY: serialized ciphertext bytes for the six aggregate
+    statistics (each a single 2-slot ciphertext covering BOTH groups),
+    plus POPULATION-COUNT metadata and a model name/protocol version
+    string. Structurally identical field shape to
+    ``CKKSDirectAuditPacket`` -- see that class's docstring for the full
+    "deliberately absent fields" privacy proof, which applies unchanged
+    here (see tests/scientific/test_encrypted_aggregation_bfv.py for this
+    packet's own field-enumeration test).
+    """
+
+    C: bytes
+    A: bytes
+    P: bytes
+    TP: bytes
+    N: bytes
+    FP: bytes
+    model: str
+    test_population_n: int
+    resolved_test_n: int
+    unresolved_test_n: int
+    protocol_version: str = PROTOCOL_VERSION_BFV
+
+
+def build_encrypted_aggregate_packet(result: BFVAuditResult) -> EncryptedAuditPacket:
+    """PHASE 2 (ACTIVE). Serialize a ``BFVAuditResult`` into the
+    transportable, aggregate-only ``EncryptedAuditPacket``. Does not
+    decrypt anything; does not touch ``lpu_context``; does not add any
+    new field beyond what ``EncryptedAuditPacket`` declares."""
+    counts = result.counts
+    return EncryptedAuditPacket(
+        C=counts.C.serialize(),
+        A=counts.A.serialize(),
+        P=counts.P.serialize(),
+        TP=counts.TP.serialize(),
+        N=counts.N.serialize(),
+        FP=counts.FP.serialize(),
+        model=result.model,
+        test_population_n=result.test_population_n,
+        resolved_test_n=result.resolved_test_n,
+        unresolved_test_n=result.unresolved_test_n,
+    )
+
+
+def _decrypt_stat_pair_bfv(data: bytes, label: str, fla_context: ts.Context) -> Tuple[int, int]:
+    """PHASE 2 (ACTIVE): each field is a size-2 BFV ciphertext (BOTH
+    groups' share of one statistic, packed as [male, female]).
+    Decryption is EXACT -- both returned values are already integers,
+    verified below rather than assumed (a non-integer result here would
+    indicate a bug, since BFV has no approximation to produce one)."""
+    try:
+        vector = ts.bfv_vector_from(fla_context, data)
+    except ValueError as exc:
+        raise MalformedCiphertextError(f"aggregate {label}: failed to parse ciphertext bytes ({exc}).") from exc
+    if vector.size() != 2:
+        raise MalformedCiphertextError(f"aggregate {label} has {vector.size()} slot(s); expected 2.")
+    decrypted = vector.decrypt()
+    male_value, female_value = int(decrypted[0]), int(decrypted[1])
+    if male_value != decrypted[0] or female_value != decrypted[1]:
+        raise MalformedCiphertextError(
+            f"aggregate {label}: BFV decryption returned a non-integer value "
+            f"({decrypted!r}) -- this must never happen and indicates a bug, "
+            "not an approximation to tolerate."
+        )
+    return male_value, female_value
+
+
+def decrypt_audit_packet_for_diagnostics(packet: EncryptedAuditPacket, fla_context: ts.Context) -> DecryptedAuditPacket:
+    """PHASE 2 (ACTIVE). FLA/EVALUATOR-ONLY diagnostic decryption.
+    Requires the FLA's private (BFV-secret-key-holding) context; never
+    called from LPU-side production code (``compute_encrypted_audit``/
+    ``build_encrypted_aggregate_packet`` above never call this).
+
+    Each of the packet's six fields is a single 2-slot BFV ciphertext
+    covering both groups; this function splits each one into its
+    male/female slot and reassembles the SAME ``DecryptedAuditPacket``/
+    ``DecryptedGroupAuditCounts`` shape every other path (legacy,
+    CKKS-direct) also produces, so every downstream consumer
+    (``fairlend.audit.reconstruction``) works identically regardless of
+    which aggregation path produced the packet. Unlike the CKKS paths,
+    the values placed into ``DecryptedGroupAuditCounts`` (a ``float``-
+    typed dataclass, kept for interop) are already EXACT integers --
+    ``.rounded()`` is a no-op here, not a correction.
+    """
+    if not bfv_crypto.context_can_decrypt(fla_context):
+        raise KeyBoundaryError(
+            "decrypt_audit_packet_for_diagnostics requires the FLA's private "
+            "(BFV-secret-key-holding) context; this is diagnostic/evaluator-"
+            "only code, never part of the LPU production path."
+        )
+    male_values: Dict[str, float] = {}
+    female_values: Dict[str, float] = {}
+    for stat in _STAT_NAMES:
+        male_int, female_int = _decrypt_stat_pair_bfv(getattr(packet, stat), stat, fla_context)
+        male_values[stat] = float(male_int)
+        female_values[stat] = float(female_int)
 
     return DecryptedAuditPacket(
         male=DecryptedGroupAuditCounts(**male_values),
