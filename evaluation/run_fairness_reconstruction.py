@@ -23,6 +23,12 @@ calls" -- keeping that true was the reason for migrating both together.
 The legacy compSim-based path remains available under its explicit
 ``_legacy_compsim`` names for the Phase 1 equivalence check.
 
+PHASE 2 NOTE (CKKS -> BFV migration, reviewer2_phase2_bfv_migration_report.md):
+migrated again, alongside ``evaluation/run_encrypted_audit.py``, to the
+BFV-backed direct-addition path for the same reason -- keeping "the SAME
+functions" true. The Phase 1 CKKS-direct baseline remains available
+under its explicit ``_ckks_direct`` names.
+
 IMPORTANT -- this is a FRESH, INDEPENDENT run of that pipeline, NOT a
 reuse of any packet ``run_encrypted_audit.py`` (or a prior run of this
 script) produced: this script calls ``build_fla_context()`` and
@@ -75,12 +81,12 @@ from fairlend.audit.aggregation import (
     decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.audit.reconstruction import compute_aggregate_reconstruction, compute_fairness_reconstruction
-from fairlend.core.config import CKKSConfig, load_evaluation_config
-from fairlend.crypto.ckks import build_fla_context, derive_lpu_context
+from fairlend.core.config import BFVConfig, load_evaluation_config
+from fairlend.crypto.bfv import build_fla_context, derive_lpu_context
 from fairlend.crypto.hashing import sha256_hex
 from fairlend.data.loader import VALID_DATA_SCOPES, save_json, stamp_data_scope
 from fairlend.models.credit_models import MODEL_NAMES
-from fairlend.roles.identity_provider import IdentityProvider
+from fairlend.roles.identity_provider import IdentityProviderBFV as IdentityProvider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "configs" / "evaluation.yaml"
@@ -95,11 +101,12 @@ def _packet_sha256(packet: EncryptedAuditPacket) -> str:
     return sha256_hex(b"".join(ordered))
 
 
-def _ckks_config_dict(config: CKKSConfig) -> dict:
+def _bfv_config_dict(config: BFVConfig) -> dict:
     return {
         "poly_modulus_degree": config.poly_modulus_degree,
+        "plain_modulus": config.plain_modulus,
         "coeff_mod_bit_sizes": list(config.coeff_mod_bit_sizes),
-        "global_scale_power": config.global_scale_power,
+        "max_safe_count": config.max_safe_count,
     }
 
 
@@ -179,7 +186,7 @@ def main() -> int:
 
     run_id = uuid.uuid4().hex
     run_timestamp_utc = datetime.now(timezone.utc).isoformat()
-    ckks_config = _ckks_config_dict(CKKSConfig())
+    bfv_config = _bfv_config_dict(BFVConfig())
 
     fla_context = build_fla_context()
     lpu_context = derive_lpu_context(fla_context)
@@ -248,7 +255,7 @@ def main() -> int:
                 {
                     "run_id": run_id,
                     "run_timestamp_utc": run_timestamp_utc,
-                    "ckks_config": ckks_config,
+                    "bfv_config": bfv_config,
                     "packet_sha256": packet_fingerprint,
                     "model": model_name,
                     "aggregate": dataclasses.asdict(agg),

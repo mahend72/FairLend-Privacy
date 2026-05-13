@@ -22,9 +22,16 @@ This script does NOT fit, retrain, or re-select tau. It:
   3. runs the REAL encrypted aggregation path (IP credential issuance ->
      LPU-verified compSim -> conditional homomorphic aggregation ->
      aggregate-only packet -> FLA diagnostic decryption), via the
-     unmodified ``fairlend.audit.aggregation.compute_encrypted_audit`` /
-     ``build_encrypted_aggregate_packet`` / ``decrypt_audit_packet_for_
-     diagnostics``, using MEMORY-BOUNDED streaming (see
+     unmodified LEGACY (Phase 5, compSim-based)
+     ``fairlend.audit.aggregation.compute_encrypted_audit_legacy_compsim``
+     / ``build_encrypted_aggregate_packet_legacy_compsim`` /
+     ``decrypt_audit_packet_for_diagnostics_legacy_compsim`` (imported
+     below under their original bare names via explicit aliasing, so
+     this script's behaviour and output schema -- including
+     ``reference_fingerprint``, which only this path produces -- remain
+     unchanged across both the Phase 1 and Phase 2 architecture changes;
+     see those reports for why this script was deliberately left on the
+     legacy path), using MEMORY-BOUNDED streaming (see
      ``_LazyEncryptedRecords`` below -- one credential/similarity-pair
      ciphertext alive at a time, never all TEST rows' credentials at
      once);

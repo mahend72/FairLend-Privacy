@@ -6,14 +6,24 @@ IP-issued/LPU-verified protected-attribute credential -- never a plaintext
 shortcut.
 
 PHASE 1 (compSim removal, reviewer2_phase1_compsim_removal_report.md):
-this script now uses the direct encrypted-additive aggregation path
-(``fairlend.audit.aggregation.compute_encrypted_audit``) rather than the
-legacy compSim-based path -- each row's protected-attribute credential
-ciphertext is accumulated directly (addition only, multiplicative depth
-0), with no encrypted reference vectors and no similarity computation.
-The legacy compSim-based path remains available under its explicit
-``_legacy_compsim`` names for the Phase 1 equivalence check
-(``evaluation/run_compsim_removal_equivalence_check.py``).
+this script uses the direct encrypted-additive aggregation path rather
+than the legacy compSim-based path -- each row's protected-attribute
+credential ciphertext is accumulated directly (addition only,
+multiplicative depth 0), with no encrypted reference vectors and no
+similarity computation. The legacy compSim-based path remains available
+under its explicit ``_legacy_compsim`` names for the Phase 1 equivalence
+check (``evaluation/run_compsim_removal_equivalence_check.py``).
+
+PHASE 2 (CKKS -> BFV migration, reviewer2_phase2_bfv_migration_report.md):
+this script now uses the BFV-backed direct-addition path
+(``fairlend.audit.aggregation.compute_encrypted_audit``, ``fairlend.
+crypto.bfv``, ``fairlend.roles.identity_provider.IdentityProviderBFV``)
+instead of CKKS -- the aggregation control flow is unchanged from Phase
+1; only the homomorphic scheme differs, and BFV decryption now returns
+EXACT integer counts (no rounding). The Phase 1 CKKS-direct baseline
+remains available under its explicit ``_ckks_direct`` names for the
+CKKS-vs-BFV differential comparison
+(``evaluation/run_ckks_vs_bfv_equivalence_check.py``).
 
 This script does NOT fit, retrain, or re-threshold any model, and does
 not recompute y_pred -- see ``fairlend.data.loader``/
@@ -82,12 +92,12 @@ from fairlend.audit.aggregation import (
     compute_encrypted_audit,
     decrypt_audit_packet_for_diagnostics,
 )
-from fairlend.core.config import CKKSConfig
-from fairlend.crypto.ckks import build_fla_context, derive_lpu_context
+from fairlend.core.config import BFVConfig
+from fairlend.crypto.bfv import build_fla_context, derive_lpu_context
 from fairlend.crypto.hashing import sha256_hex
 from fairlend.data.loader import VALID_DATA_SCOPES, save_json, stamp_data_scope
 from fairlend.models.credit_models import MODEL_NAMES
-from fairlend.roles.identity_provider import IdentityProvider
+from fairlend.roles.identity_provider import IdentityProviderBFV as IdentityProvider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GROUP_LABEL = {"male": "male", "female": "female"}
@@ -108,11 +118,12 @@ def _packet_sha256(packet: EncryptedAuditPacket) -> str:
     return sha256_hex(b"".join(ordered))
 
 
-def _ckks_config_dict(config: CKKSConfig) -> dict:
+def _bfv_config_dict(config: BFVConfig) -> dict:
     return {
         "poly_modulus_degree": config.poly_modulus_degree,
+        "plain_modulus": config.plain_modulus,
         "coeff_mod_bit_sizes": list(config.coeff_mod_bit_sizes),
-        "global_scale_power": config.global_scale_power,
+        "max_safe_count": config.max_safe_count,
     }
 
 
@@ -184,7 +195,7 @@ def main() -> int:
 
     run_id = uuid.uuid4().hex
     run_timestamp_utc = datetime.now(timezone.utc).isoformat()
-    ckks_config = _ckks_config_dict(CKKSConfig())
+    bfv_config = _bfv_config_dict(BFVConfig())
 
     fla_context = build_fla_context()
     lpu_context = derive_lpu_context(fla_context)
@@ -234,7 +245,7 @@ def main() -> int:
             {
                 "run_id": run_id,
                 "run_timestamp_utc": run_timestamp_utc,
-                "ckks_config": ckks_config,
+                "bfv_config": bfv_config,
                 "packet_sha256": _packet_sha256(packet),
                 "model": model_name,
                 "test_population_n": decrypted.test_population_n,
