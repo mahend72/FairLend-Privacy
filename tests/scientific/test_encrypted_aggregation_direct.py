@@ -1,10 +1,19 @@
-"""PHASE 1 (production, direct encrypted-additive aggregation) scientific
-invariant tests: proves the compSim-removal architecture correction
-(reviewer2_phase1_compsim_removal_report.md) preserves every invariant
-the legacy compSim-based path (tests/scientific/test_encrypted_
+"""PHASE 1 BASELINE (CKKS, direct encrypted-additive aggregation)
+scientific invariant tests: proves the compSim-removal architecture
+correction (reviewer2_phase1_compsim_removal_report.md) preserves every
+invariant the legacy compSim-based path (tests/scientific/test_encrypted_
 aggregation.py, now legacy) established, while using strictly less
 homomorphic machinery (addition only, no reference vectors, no
 ciphertext-ciphertext multiplication, multiplicative depth 0).
+
+PHASE 2 STATUS: as of the BFV migration
+(reviewer2_phase2_bfv_migration_report.md), this file explicitly targets
+the ``*_ckks_direct``/``CKKSDirect*`` names -- the Phase 1 CKKS baseline
+is no longer the ACTIVE protocol (BFV is), but is retained unchanged for
+the CKKS-vs-BFV differential comparison. The equivalent suite for the
+ACTIVE BFV path is ``tests/scientific/test_encrypted_aggregation_bfv.py``.
+Nothing in this file's expected results was changed to accommodate Phase
+2.
 
 Uses the same hermetic ``pipeline`` fixture (tests/scientific/conftest.py)
 as the legacy test files, so this suite is directly comparable to them --
@@ -20,14 +29,14 @@ import tenseal as ts
 
 from fairlend.audit import aggregation as aggregation_module
 from fairlend.audit.aggregation import (
-    EncryptedAuditCounts,
-    EncryptedAuditPacket,
+    CKKSDirectAuditCounts as EncryptedAuditCounts,
+    CKKSDirectAuditPacket as EncryptedAuditPacket,
     EncryptedTestRecord,
     GROUP_FEMALE,
     GROUP_MALE,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
-    decrypt_audit_packet_for_diagnostics,
+    build_encrypted_aggregate_packet_ckks_direct as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_ckks_direct as compute_encrypted_audit,
+    decrypt_audit_packet_for_diagnostics_ckks_direct as decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.core.exceptions import CredentialVerificationError, KeyBoundaryError
 from fairlend.crypto.ckks import context_can_decrypt
@@ -205,9 +214,9 @@ def test_direct_path_does_not_call_comp_sim():
     # Checks for an actual CALL (``comp_sim(``), not the bare substring --
     # this function's own docstring legitimately mentions "comp_sim" in
     # prose when explaining what it replaces.
-    source = inspect.getsource(aggregation_module.compute_encrypted_audit)
+    source = inspect.getsource(aggregation_module.compute_encrypted_audit_ckks_direct)
     assert "comp_sim(" not in source
-    packet_source = inspect.getsource(aggregation_module.build_encrypted_aggregate_packet)
+    packet_source = inspect.getsource(aggregation_module.build_encrypted_aggregate_packet_ckks_direct)
     assert "comp_sim(" not in packet_source
 
 

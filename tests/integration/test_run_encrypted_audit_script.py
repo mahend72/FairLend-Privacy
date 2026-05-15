@@ -215,26 +215,27 @@ def test_rerunning_encrypted_audit_is_deterministic_in_rounded_counts(scripts, p
         assert model_a["packet_sha256"] != model_b["packet_sha256"]
 
 
-def test_provenance_fields_present_and_ckks_config_matches_manuscript_defaults(
+def test_provenance_fields_present_and_bfv_config_matches_this_codebases_defaults(
     scripts, pipeline_paths, tmp_path, monkeypatch
 ):
     import json
 
-    from fairlend.core.config import CKKSConfig
+    from fairlend.core.config import BFVConfig
 
     output = tmp_path / "diag.json"
     _run_encrypted_audit(scripts, pipeline_paths, monkeypatch, output)
     reports = json.loads(output.read_text())["reports"]
 
-    default_config = CKKSConfig()
+    default_config = BFVConfig()
     for report in reports:
         assert len(report["run_id"]) == 32  # uuid4().hex
         assert "T" in report["run_timestamp_utc"]  # ISO 8601
         assert len(report["packet_sha256"]) == 64  # sha256 hex digest
-        assert report["ckks_config"] == {
+        assert report["bfv_config"] == {
             "poly_modulus_degree": default_config.poly_modulus_degree,
+            "plain_modulus": default_config.plain_modulus,
             "coeff_mod_bit_sizes": list(default_config.coeff_mod_bit_sizes),
-            "global_scale_power": default_config.global_scale_power,
+            "max_safe_count": default_config.max_safe_count,
         }
     # Both models in the SAME run share the same run_id/timestamp/config
     # (one script invocation) but have DIFFERENT packet fingerprints
