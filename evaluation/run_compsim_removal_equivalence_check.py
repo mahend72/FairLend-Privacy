@@ -133,15 +133,22 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     import tempfile
 
+    # NOTE (Phase 2): this script compares the LEGACY compSim path against
+    # the Phase 1 CKKS-DIRECT baseline specifically -- it explicitly
+    # imports the *_ckks_direct names (not the bare canonical names,
+    # which as of Phase 2 refer to the BFV active path) so this Phase 1
+    # comparison remains exactly what it always was, unaffected by BFV's
+    # introduction. See evaluation/run_ckks_vs_bfv_equivalence_check.py
+    # for the Phase 2 (CKKS-direct vs BFV-direct) comparison.
     from fairlend.audit.aggregation import (
         EncryptedTestRecord,
         build_audit_frame,
-        build_encrypted_aggregate_packet,
+        build_encrypted_aggregate_packet_ckks_direct as build_encrypted_aggregate_packet,
         build_encrypted_aggregate_packet_legacy_compsim,
-        compute_encrypted_audit,
+        compute_encrypted_audit_ckks_direct as compute_encrypted_audit,
         compute_encrypted_audit_legacy_compsim,
         compute_plaintext_audit,
-        decrypt_audit_packet_for_diagnostics,
+        decrypt_audit_packet_for_diagnostics_ckks_direct as decrypt_audit_packet_for_diagnostics,
         decrypt_audit_packet_for_diagnostics_legacy_compsim,
     )
     from fairlend.audit.fairness import compute_demographic_parity, compute_equalised_odds
