@@ -1,0 +1,36 @@
+{
+  "per_model": [
+    {
+      "DP_bfv_direct": 0.10526315789473684,
+      "DP_bfv_matches_plain_exactly": true,
+      "DP_ckks_direct": 0.10526315789473684,
+      "DP_plain": 0.10526315789473684,
+      "EO_bfv_direct": 0.25,
+      "EO_bfv_matches_plain_exactly": true,
+      "EO_ckks_direct": 0.25,
+      "EO_plain": 0.25,
+      "model": "logistic_regression",
+      "n_records": 38
+    },
+    {
+      "DP_bfv_direct": 0.0,
+      "DP_bfv_matches_plain_exactly": true,
+      "DP_ckks_direct": 0.0,
+      "DP_plain": 0.0,
+      "EO_bfv_direct": 0.0,
+      "EO_bfv_matches_plain_exactly": true,
+      "EO_ckks_direct": 0.0,
+      "EO_plain": 0.0,
+      "model": "random_forest",
+      "n_records": 38
+    }
+  ],
+  "provenance": {
+    "git_commit": "54379d922c910a88b151fe58450f569444a3ada9",
+    "git_dirty": true,
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.31",
+    "python_version": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:09:02) [GCC 11.2.0]",
+    "tenseal_version": "0.3.17",
+    "timestamp_utc": "2026-09-26T19:55:04.548692+00:00"
+  }
+}
