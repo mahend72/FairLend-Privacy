@@ -6,12 +6,18 @@ PHASE 1 NOTE (compSim removal, reviewer2_phase1_compsim_removal_report.md):
 this script deliberately continues to benchmark the LEGACY compSim-based
 aggregation path (imported here under its original names via explicit
 ``_legacy_compsim`` aliasing) so that ``results/benchmarks/*.csv``
-remain exactly reproducible from this script unchanged. It does not yet
-benchmark the new direct-addition production path
-(``fairlend.audit.aggregation.compute_encrypted_audit``) -- that is
-follow-up work, not required to validate the Phase 1 architectural
-change itself (see the Phase 1 report's "Impact on existing result
-artifacts" section).
+remain exactly reproducible from this script unchanged. It does not
+benchmark the CKKS direct-addition baseline or the BFV active path --
+that is follow-up work, not required to validate the Phase 1
+architectural change itself (see the Phase 1 report's "Impact on
+existing result artifacts" section).
+
+PHASE 2 NOTE (CKKS -> BFV migration, reviewer2_phase2_bfv_migration_report.md):
+this script's numbers are the LEGACY compSim-path leg of a three-way
+comparison only -- the primary CKKS-direct-vs-BFV-direct benchmark
+(the scientifically relevant comparison for Phase 2) is
+``evaluation/run_ckks_vs_bfv_benchmarks.py``, which writes its own,
+separately-named result files and does not touch this script's output.
 
 Every timing benchmark calls the actual production functions
 (``fairlend.crypto``/``fairlend.audit``/``fairlend.roles``) unmodified --
