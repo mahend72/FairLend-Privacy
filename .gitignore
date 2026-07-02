@@ -17,5 +17,15 @@ __pycache__/
 build/
 dist/
 
+# NIZKP circuit toolchain (Phase 3B) -- node_modules/circuit build
+# artifacts (r1cs/wasm/zkey/ptau) are large, binary, and fully
+# reproducible from src/fairlend/nizkp/circuits/{r_acc.circom,package.json};
+# never commit them. See reviewer2_phase3b_nizkp_instantiation_report.md
+# for exact tool/library versions and setup reproduction steps.
+node_modules/
+*.ptau
+*.zkey
+
+
 # Editors / OS
 .DS_Store
