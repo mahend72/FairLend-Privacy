@@ -1,0 +1,15 @@
+{
+  "circom_compile_seconds": 17.981988651008578,
+  "circom_version": "circom compiler 2.0.9",
+  "circuit": "r_acc",
+  "curve": "bn128 (alt_bn128 / BN254)",
+  "labels": 22955,
+  "linear_constraints": 0,
+  "non-linear_constraints": 4708,
+  "private_inputs": 5,
+  "private_outputs": 0,
+  "proof_system": "groth16",
+  "public_inputs": 4,
+  "public_outputs": 0,
+  "wires": 4713
+}
