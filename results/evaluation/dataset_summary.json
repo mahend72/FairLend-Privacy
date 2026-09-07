@@ -1,0 +1,46 @@
+{
+  "cleaned_row_count": 887440,
+  "columns_loaded": [
+    "id",
+    "loan_status",
+    "annual_inc",
+    "emp_length",
+    "dti",
+    "home_ownership",
+    "addr_state",
+    "issue_d"
+  ],
+  "covers_dates_beyond_manuscript_period": true,
+  "data_scope": "real_lendingclub",
+  "footer_rows_removed": 33,
+  "input_path": "data/raw/accepted_2007_to_2018Q4.csv",
+  "is_real_lendingclub": true,
+  "manuscript_period_filter": {
+    "end_year": 2015,
+    "issue_date_column": "issue_d",
+    "start_year": 2007
+  },
+  "manuscript_reported_cleaned_rows_approx": 890000,
+  "manuscript_reported_columns_approx": 75,
+  "note": "raw_row_count/raw_column_count are the literal file contents (all data rows incl. footer rows; the true CSV header's column count). footer_rows_removed rows are excluded as non-data (non-numeric id). valid_data_row_count is post-footer-removal, pre-period-filter. rows_outside_manuscript_period_removed rows are then excluded per manuscript_period_filter. cleaned_row_count = valid_data_row_count - rows_outside_manuscript_period_removed is what is compared to manuscript_reported_cleaned_rows_approx and is the population outcome_counts/population_counts describe. population_counts.model_eligible is eligible for supervised credit-model train/validation/test fitting; population_counts.audit_eligible is the full cleaned population (see fairlend.data.populations for rationale).",
+  "outcome_counts": {
+    "0": 153065,
+    "1": 676290,
+    "<NA>": 58085
+  },
+  "population_counts": {
+    "audit_eligible": 887440,
+    "model_eligible": 829355,
+    "unresolved_outcome": 58085
+  },
+  "raw_column_count": 151,
+  "raw_row_count": 2260701,
+  "rows_outside_manuscript_period_removed": 1373228,
+  "sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "true_date_coverage": {
+    "max": "Dec-2018",
+    "min": "Jun-2007"
+  },
+  "unmapped_loan_status_values": {},
+  "valid_data_row_count": 2260668
+}

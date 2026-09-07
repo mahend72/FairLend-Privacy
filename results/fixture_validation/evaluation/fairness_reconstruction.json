@@ -1,0 +1,230 @@
+{
+  "reports": [
+    {
+      "aggregate": {
+        "absolute_error": {
+          "A_f": 5.822007851818967e-06,
+          "A_m": 6.080756941528875e-06,
+          "C_f": 7.532741044258273e-06,
+          "C_m": 7.547730344725778e-06,
+          "FP_f": 1.4622510224882035e-06,
+          "FP_m": 1.7100825195903724e-06,
+          "N_f": 1.7289396145869773e-06,
+          "N_m": 1.8392029166314217e-06,
+          "P_f": 3.0208456127667205e-06,
+          "P_m": 3.3145678255408484e-06,
+          "TP_f": 2.899193287220214e-06,
+          "TP_m": 3.0463303790639884e-06
+        },
+        "model": "logistic_regression",
+        "plaintext": {
+          "A_f": 16,
+          "A_m": 14,
+          "C_f": 19,
+          "C_m": 19,
+          "FP_f": 5,
+          "FP_m": 3,
+          "N_f": 5,
+          "N_m": 4,
+          "P_f": 9,
+          "P_m": 7,
+          "TP_f": 8,
+          "TP_m": 7
+        },
+        "raw_decrypted": {
+          "A_f": 15.999994177992148,
+          "A_m": 13.999993919243058,
+          "C_f": 18.999992467258956,
+          "C_m": 18.999992452269655,
+          "FP_f": 4.9999985377489775,
+          "FP_m": 2.9999982899174804,
+          "N_f": 4.999998271060385,
+          "N_m": 3.9999981607970834,
+          "P_f": 8.999996979154387,
+          "P_m": 6.9999966854321745,
+          "TP_f": 7.999997100806713,
+          "TP_m": 6.999996953669621
+        },
+        "rounded": {
+          "A_f": 16,
+          "A_m": 14,
+          "C_f": 19,
+          "C_m": 19,
+          "FP_f": 5,
+          "FP_m": 3,
+          "N_f": 5,
+          "N_m": 4,
+          "P_f": 9,
+          "P_m": 7,
+          "TP_f": 8,
+          "TP_m": 7
+        }
+      },
+      "ckks_config": {
+        "coeff_mod_bit_sizes": [
+          60,
+          40,
+          40,
+          60
+        ],
+        "global_scale_power": 40,
+        "poly_modulus_degree": 8192
+      },
+      "data_scope": "synthetic_fixture",
+      "fairness": {
+        "dp_encrypted": {
+          "available": true,
+          "reason": null,
+          "value": 0.10526315789473684
+        },
+        "dp_plain": {
+          "available": true,
+          "reason": null,
+          "value": 0.10526315789473684
+        },
+        "dp_raw_ckks": {
+          "available": true,
+          "reason": null,
+          "value": 0.10526321266446659
+        },
+        "dp_raw_ckks_error": 5.4769729751491525e-08,
+        "dp_reconstruction_error": 0.0,
+        "eo_encrypted": {
+          "available": true,
+          "reason": null,
+          "value": 0.25
+        },
+        "eo_plain": {
+          "available": true,
+          "reason": null,
+          "value": 0.25
+        },
+        "eo_raw_ckks": {
+          "available": true,
+          "reason": null,
+          "value": 0.2500000826701211
+        },
+        "eo_raw_ckks_error": 8.26701210820957e-08,
+        "eo_reconstruction_error": 0.0
+      },
+      "is_real_lendingclub": false,
+      "model": "logistic_regression",
+      "packet_sha256": "15a060b629d2c0e858c01a0e38c3f2ff685bad56df44ccb1e5dd9e163171b0d5",
+      "run_id": "733e07529b5f43e6baf8c0a686860de2",
+      "run_timestamp_utc": "2026-09-06T00:48:44.492690+00:00"
+    },
+    {
+      "aggregate": {
+        "absolute_error": {
+          "A_f": 7.6100938812828645e-06,
+          "A_m": 7.527138851770587e-06,
+          "C_f": 7.609446662115715e-06,
+          "C_m": 7.526605415364429e-06,
+          "FP_f": 1.7378904226816871e-06,
+          "FP_m": 1.8491277735677158e-06,
+          "N_f": 1.7376306695737753e-06,
+          "N_m": 1.8490158972817028e-06,
+          "P_f": 3.0838117979214985e-06,
+          "P_m": 3.3009981441622926e-06,
+          "TP_f": 3.0851222874161977e-06,
+          "TP_m": 3.2982032456274624e-06
+        },
+        "model": "random_forest",
+        "plaintext": {
+          "A_f": 19,
+          "A_m": 19,
+          "C_f": 19,
+          "C_m": 19,
+          "FP_f": 5,
+          "FP_m": 4,
+          "N_f": 5,
+          "N_m": 4,
+          "P_f": 9,
+          "P_m": 7,
+          "TP_f": 9,
+          "TP_m": 7
+        },
+        "raw_decrypted": {
+          "A_f": 18.99999238990612,
+          "A_m": 18.99999247286115,
+          "C_f": 18.999992390553338,
+          "C_m": 18.999992473394585,
+          "FP_f": 4.999998262109577,
+          "FP_m": 3.9999981508722264,
+          "N_f": 4.99999826236933,
+          "N_m": 3.9999981509841027,
+          "P_f": 8.999996916188202,
+          "P_m": 6.999996699001856,
+          "TP_f": 8.999996914877713,
+          "TP_m": 6.999996701796754
+        },
+        "rounded": {
+          "A_f": 19,
+          "A_m": 19,
+          "C_f": 19,
+          "C_m": 19,
+          "FP_f": 5,
+          "FP_m": 4,
+          "N_f": 5,
+          "N_m": 4,
+          "P_f": 9,
+          "P_m": 7,
+          "TP_f": 9,
+          "TP_m": 7
+        }
+      },
+      "ckks_config": {
+        "coeff_mod_bit_sizes": [
+          60,
+          40,
+          40,
+          60
+        ],
+        "global_scale_power": 40,
+        "poly_modulus_degree": 8192
+      },
+      "data_scope": "synthetic_fixture",
+      "fairness": {
+        "dp_encrypted": {
+          "available": true,
+          "reason": null,
+          "value": 0.0
+        },
+        "dp_plain": {
+          "available": true,
+          "reason": null,
+          "value": 0.0
+        },
+        "dp_raw_ckks": {
+          "available": true,
+          "reason": null,
+          "value": 5.988542994828094e-12
+        },
+        "dp_raw_ckks_error": 5.988542994828094e-12,
+        "dp_reconstruction_error": 0.0,
+        "eo_encrypted": {
+          "available": true,
+          "reason": null,
+          "value": 0.0
+        },
+        "eo_plain": {
+          "available": true,
+          "reason": null,
+          "value": 0.0
+        },
+        "eo_raw_ckks": {
+          "available": true,
+          "reason": null,
+          "value": 1.4560996852708286e-10
+        },
+        "eo_raw_ckks_error": 1.4560996852708286e-10,
+        "eo_reconstruction_error": 0.0
+      },
+      "is_real_lendingclub": false,
+      "model": "random_forest",
+      "packet_sha256": "ab20e658f8747e8a4833169990ea7c9701fc0dcb44183e2f92721eb37f0480a2",
+      "run_id": "733e07529b5f43e6baf8c0a686860de2",
+      "run_timestamp_utc": "2026-09-06T00:48:44.492690+00:00"
+    }
+  ]
+}

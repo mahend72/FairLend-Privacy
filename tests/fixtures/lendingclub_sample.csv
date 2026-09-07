@@ -1,0 +1,201 @@
+id,loan_status,annual_inc,emp_length,dti,home_ownership,addr_state,issue_d
+1,Charged Off,5000000.0,3 years,16.12,RENT,OH,Jun-2009
+2,Fully Paid,1.0,2 years,19.73,OTHER,CA,Aug-2007
+3,Fully Paid,91596.69,7 years,23.35,RENT,WA,Oct-2017
+4,Fully Paid,44230.42,2 years,21.38,RENT,MA,Nov-2007
+5,Default,119176.72,6 years,20.0,RENT,MD,Apr-2009
+6,Late (31-120 days),71156.66,6 years,16.43,NONE,MA,Nov-2015
+7,Charged Off,76162.38,10+ years,23.46,RENT,TX,Feb-2012
+8,Current,78776.08,< 1 year,19.4,MORTGAGE,OH,Aug-2014
+9,Charged Off,40194.9,5 years,13.96,RENT,MA,Dec-2017
+10,Late (31-120 days),23556.09,8 years,16.79,OWN,MA,Aug-2014
+11,Default,34982.34,1 year,8.25,NONE,NY,Nov-2011
+12,Fully Paid,135301.57,4 years,10.31,MORTGAGE,VA,May-2007
+13,Does not meet the credit policy. Status:Charged Off,114730.59,< 1 year,2.94,NONE,WA,Nov-2017
+14,Fully Paid,50339.2,8 years,12.56,OWN,TX,Aug-2007
+15,Current,51490.98,< 1 year,28.68,NONE,MD,Jun-2013
+16,Fully Paid,100539.2,4 years,13.55,MORTGAGE,MA,Aug-2007
+17,Does not meet the credit policy. Status:Charged Off,55038.88,9 years,24.3,MORTGAGE,AZ,Jan-2011
+18,Charged Off,31268.61,5 years,17.97,MORTGAGE,CA,Feb-2007
+19,Fully Paid,112732.33,10+ years,12.4,MORTGAGE,IL,Sep-2012
+20,Fully Paid,76007.65,8 years,28.71,RENT,NY,Nov-2018
+21,Fully Paid,17014.65,10+ years,22.66,OWN,TN,Oct-2014
+22,Fully Paid,51195.4,1 year,3.99,RENT,IL,Jun-2016
+23,Current,64333.46,< 1 year,26.33,MORTGAGE,OH,Dec-2007
+24,Charged Off,76162.42,< 1 year,9.4,RENT,WA,Apr-2011
+25,Charged Off,64606.84,9 years,16.58,OWN,MD,Jan-2008
+26,Fully Paid,43570.22,7 years,23.34,OWN,TX,Mar-2013
+27,Issued,56507.04,5 years,15.6,MORTGAGE,TX,Oct-2009
+28,Issued,69383.21,1 year,26.95,MORTGAGE,IL,Jan-2010
+29,Current,52365.22,7 years,24.09,RENT,VA,May-2011
+30,Current,49714.39,3 years,5.38,MORTGAGE,OH,Jun-2012
+31,Current,111976.24,7 years,14.22,OWN,TN,Aug-2007
+32,Fully Paid,37298.04,5 years,20.26,MORTGAGE,WA,Aug-2013
+33,Fully Paid,50275.25,5 years,13.4,MORTGAGE,MD,Nov-2010
+34,Current,21684.77,8 years,16.27,OWN,MA,Sep-2013
+35,Charged Off,78471.04,1 year,24.4,MORTGAGE,VA,Apr-2011
+36,Fully Paid,90593.0,6 years,20.53,OWN,FL,Jan-2008
+37,Charged Off,78766.53,2 years,10.64,OWN,PA,Dec-2009
+38,In Grace Period,94734.76,8 years,19.4,RENT,NY,Oct-2008
+39,Late (31-120 days),74634.14,5 years,13.1,RENT,CA,Jan-2011
+40,Fully Paid,71058.42,10+ years,8.28,MORTGAGE,PA,Jan-2015
+41,Charged Off,75884.94,2 years,8.96,MORTGAGE,FL,Feb-2012
+42,Fully Paid,52383.44,10+ years,20.3,RENT,MA,Jan-2010
+43,Charged Off,108462.95,8 years,17.78,NONE,VA,Jun-2007
+44,Fully Paid,50297.67,5 years,18.04,MORTGAGE,IL,Jun-2018
+45,Fully Paid,28819.98,9 years,8.83,OWN,IL,Sep-2012
+46,In Grace Period,91573.01,6 years,16.53,MORTGAGE,NY,Mar-2011
+47,Fully Paid,151047.76,7 years,9.7,OWN,GA,Dec-2015
+48,Charged Off,37046.33,10+ years,10.59,OWN,OH,Jan-2013
+49,Fully Paid,56907.61,< 1 year,16.68,RENT,WA,Nov-2015
+50,Does not meet the credit policy. Status:Fully Paid,42500.83,9 years,6.93,RENT,PA,Jun-2015
+51,Current,49499.03,4 years,23.35,MORTGAGE,MD,Dec-2011
+52,Fully Paid,61270.05,3 years,37.9,MORTGAGE,NY,Feb-2015
+53,In Grace Period,32179.85,,21.67,MORTGAGE,NY,Jun-2011
+54,Fully Paid,52113.18,8 years,9.66,RENT,MA,Jul-2008
+55,Fully Paid,28767.92,5 years,15.83,OWN,FL,May-2011
+56,Fully Paid,45066.13,4 years,5.56,OWN,WA,Jan-2007
+57,Charged Off,33089.3,9 years,14.98,OTHER,TN,Aug-2010
+58,Current,35258.77,< 1 year,22.06,RENT,TN,Oct-2013
+59,Fully Paid,25337.6,7 years,22.72,RENT,TN,Sep-2017
+60,Fully Paid,110158.7,8 years,9.75,MORTGAGE,PA,Aug-2013
+61,Fully Paid,77228.94,8 years,20.39,MORTGAGE,CA,Nov-2015
+62,Fully Paid,22954.47,3 years,27.25,RENT,GA,Feb-2012
+63,Fully Paid,44426.27,8 years,32.04,RENT,OH,Aug-2008
+64,Charged Off,42820.86,2 years,12.39,MORTGAGE,MD,Sep-2014
+65,Fully Paid,42384.07,4 years,11.09,MORTGAGE,FL,Nov-2008
+66,Current,29043.74,4 years,18.44,MORTGAGE,CA,Dec-2015
+67,Fully Paid,87307.61,6 years,0.0,RENT,MA,May-2015
+68,Late (16-30 days),49122.29,1 year,13.75,RENT,NY,Jan-2012
+69,Fully Paid,75665.26,4 years,15.83,OWN,TN,Oct-2007
+70,Fully Paid,77915.32,< 1 year,14.33,MORTGAGE,FL,Nov-2007
+71,Charged Off,119100.46,8 years,5.33,RENT,TX,Dec-2015
+72,Late (31-120 days),24162.66,9 years,16.04,RENT,MA,Sep-2009
+73,Fully Paid,142814.38,1 year,11.79,OWN,FL,Jan-2014
+74,Late (16-30 days),112916.92,7 years,24.06,RENT,NC,Dec-2015
+75,Charged Off,79740.51,9 years,10.65,RENT,MD,Sep-2009
+76,Fully Paid,197164.98,10+ years,15.74,MORTGAGE,IL,Dec-2007
+77,Charged Off,66336.09,9 years,16.14,MORTGAGE,GA,Nov-2009
+78,Issued,90286.16,4 years,22.54,RENT,FL,Sep-2012
+79,Late (16-30 days),41389.93,10+ years,0.0,RENT,NC,Nov-2014
+80,Charged Off,105575.19,10+ years,15.28,RENT,PA,Jul-2014
+81,Current,65115.18,5 years,24.08,RENT,PA,Nov-2015
+82,Charged Off,47781.79,8 years,15.11,OWN,TX,Oct-2017
+83,Charged Off,172554.71,10+ years,5.78,OWN,VA,Apr-2011
+84,Current,51410.63,5 years,20.61,RENT,FL,Jul-2016
+85,Fully Paid,60140.01,9 years,20.69,MORTGAGE,WA,May-2013
+86,Current,54250.09,7 years,15.84,MORTGAGE,AZ,Apr-2015
+87,Current,41034.34,3 years,8.72,OWN,AZ,Jul-2011
+88,Late (31-120 days),78091.48,8 years,12.07,RENT,IL,Nov-2009
+89,Fully Paid,86612.97,6 years,15.49,MORTGAGE,FL,Dec-2014
+90,Current,71480.95,1 year,11.0,OWN,TN,Mar-2007
+91,Late (31-120 days),18392.73,4 years,2.64,RENT,AZ,Apr-2014
+92,Late (16-30 days),99111.28,< 1 year,11.85,RENT,OH,Mar-2011
+93,Fully Paid,50255.78,5 years,17.51,OWN,IL,Aug-2008
+94,Does not meet the credit policy. Status:Charged Off,32592.53,4 years,13.94,MORTGAGE,PA,Sep-2014
+95,Issued,80954.33,4 years,17.4,MORTGAGE,WA,Oct-2007
+96,Late (16-30 days),79334.21,6 years,18.67,RENT,NY,Oct-2011
+97,Fully Paid,35541.74,1 year,25.17,OWN,MD,Feb-2013
+98,Issued,206120.83,10+ years,35.63,NONE,GA,May-2015
+99,In Grace Period,32701.84,7 years,23.85,OWN,MA,Nov-2017
+100,Default,25172.28,9 years,6.77,MORTGAGE,WA,Jan-2018
+101,Charged Off,33621.27,9 years,0.0,RENT,MD,Jul-2013
+102,Fully Paid,121832.19,6 years,17.24,MORTGAGE,NC,Oct-2015
+103,Default,54834.32,< 1 year,18.57,OTHER,VA,Dec-2007
+104,Late (31-120 days),49710.51,7 years,8.71,RENT,NC,Feb-2010
+105,Fully Paid,58041.94,6 years,20.18,RENT,TN,Nov-2007
+106,Charged Off,44431.02,9 years,11.86,OWN,AZ,Feb-2008
+107,Fully Paid,42398.5,5 years,21.22,RENT,VA,Dec-2010
+108,Late (31-120 days),43451.14,9 years,15.4,NONE,NY,Mar-2008
+109,Fully Paid,85304.1,,21.18,MORTGAGE,WA,Mar-2015
+110,Current,99730.61,3 years,4.05,NONE,AZ,Apr-2007
+111,Charged Off,35328.8,1 year,14.49,MORTGAGE,MD,Nov-2014
+112,Fully Paid,67481.85,4 years,16.81,OWN,TN,Jul-2016
+113,Current,88796.6,8 years,6.6,MORTGAGE,MD,Nov-2012
+114,Fully Paid,34861.0,4 years,33.06,MORTGAGE,TX,Jan-2010
+115,Current,46570.23,6 years,13.67,RENT,IL,Dec-2009
+116,Charged Off,35630.88,1 year,29.12,OTHER,CA,Sep-2011
+117,Late (31-120 days),31397.57,8 years,12.69,OWN,TX,Aug-2014
+118,Fully Paid,63002.61,3 years,16.16,MORTGAGE,GA,May-2014
+119,Does not meet the credit policy. Status:Fully Paid,41437.18,2 years,27.47,OWN,VA,May-2009
+120,Fully Paid,82089.43,9 years,20.43,RENT,IL,Jun-2014
+121,Fully Paid,58999.78,6 years,19.54,RENT,IL,Aug-2015
+122,Fully Paid,73593.62,5 years,20.13,OWN,MD,Oct-2015
+123,Late (16-30 days),51733.38,9 years,7.07,RENT,MD,Feb-2008
+124,Charged Off,43586.44,< 1 year,14.88,RENT,TX,Nov-2012
+125,Fully Paid,57220.27,7 years,10.35,OWN,WA,Dec-2014
+126,Fully Paid,59724.76,3 years,19.58,MORTGAGE,PA,Sep-2013
+127,In Grace Period,42069.25,1 year,13.65,MORTGAGE,WA,Sep-2013
+128,Fully Paid,74109.41,7 years,17.65,RENT,NC,Oct-2014
+129,Fully Paid,86968.17,4 years,17.38,MORTGAGE,NC,May-2012
+130,Fully Paid,64798.73,3 years,17.71,OWN,TX,May-2013
+131,Charged Off,141032.47,10+ years,17.72,NONE,IL,Dec-2012
+132,Charged Off,43644.41,2 years,12.78,MORTGAGE,WA,Feb-2015
+133,Default,77675.74,5 years,9.57,MORTGAGE,IL,Sep-2014
+134,Charged Off,48807.17,< 1 year,12.69,RENT,WA,Oct-2010
+135,Fully Paid,67326.87,1 year,26.57,RENT,CA,Apr-2011
+136,Fully Paid,39538.31,9 years,20.99,RENT,FL,May-2015
+137,Default,104564.74,8 years,22.7,OWN,MA,Dec-2011
+138,Charged Off,65382.54,6 years,29.04,OWN,GA,Mar-2015
+139,Late (16-30 days),108675.56,2 years,8.56,RENT,MD,Apr-2015
+140,Fully Paid,31791.44,6 years,22.08,MORTGAGE,IL,Sep-2015
+141,Charged Off,46781.47,< 1 year,9.4,MORTGAGE,WA,Apr-2014
+142,Charged Off,38319.61,7 years,15.33,RENT,MD,Sep-2016
+143,Does not meet the credit policy. Status:Fully Paid,45891.22,7 years,21.87,OWN,NY,Jan-2011
+144,Fully Paid,42348.79,7 years,30.91,OWN,IL,May-2015
+145,Fully Paid,56372.09,6 years,11.74,MORTGAGE,AZ,Sep-2009
+146,Late (31-120 days),59360.03,< 1 year,17.24,RENT,MD,Dec-2007
+147,Fully Paid,58659.66,2 years,27.25,RENT,TN,Feb-2015
+148,Default,45353.29,6 years,6.08,MORTGAGE,CA,Jul-2007
+149,Fully Paid,65756.42,4 years,20.9,OWN,NC,Jan-2012
+150,Default,92763.43,,15.53,MORTGAGE,CA,Mar-2016
+151,Fully Paid,38134.03,10+ years,10.95,OWN,IL,Aug-2010
+152,Fully Paid,59900.75,1 year,19.17,OWN,CA,Jul-2012
+153,Fully Paid,57697.24,6 years,22.76,RENT,GA,Dec-2007
+154,Current,75673.05,7 years,10.7,RENT,OH,Oct-2008
+155,Fully Paid,57992.6,1 year,21.04,MORTGAGE,AZ,Jan-2011
+156,Current,59407.02,3 years,19.39,RENT,FL,Nov-2007
+157,Late (16-30 days),36477.54,7 years,8.07,MORTGAGE,IL,Oct-2011
+158,Fully Paid,60527.43,10+ years,30.43,RENT,VA,Mar-2016
+159,Does not meet the credit policy. Status:Charged Off,37761.97,3 years,26.72,MORTGAGE,PA,Mar-2009
+160,Fully Paid,77485.97,2 years,11.12,OWN,PA,Nov-2009
+161,Fully Paid,56862.45,9 years,13.31,MORTGAGE,MD,Nov-2012
+162,Fully Paid,61079.36,6 years,24.17,MORTGAGE,GA,Jan-2013
+163,Charged Off,38345.97,5 years,14.04,RENT,VA,Jan-2013
+164,Issued,89489.7,2 years,3.28,RENT,FL,Jan-2010
+165,Current,84639.55,< 1 year,26.39,RENT,CA,Mar-2009
+166,Fully Paid,92112.13,< 1 year,18.07,RENT,MA,Dec-2013
+167,Fully Paid,182351.8,6 years,33.26,OWN,IL,Dec-2007
+168,Does not meet the credit policy. Status:Charged Off,58322.33,2 years,20.86,RENT,NC,Nov-2010
+169,In Grace Period,109283.58,10+ years,19.53,MORTGAGE,NC,Jul-2009
+170,Charged Off,56279.53,1 year,41.0,RENT,NY,Jun-2014
+171,Fully Paid,72914.56,5 years,16.63,RENT,MA,Feb-2010
+172,Issued,71873.92,4 years,10.39,OWN,TX,Aug-2014
+173,Fully Paid,68343.1,2 years,19.83,RENT,TX,Jan-2009
+174,Fully Paid,83210.44,8 years,27.09,RENT,PA,Dec-2015
+175,In Grace Period,51432.82,7 years,8.68,RENT,WA,May-2009
+176,Default,61112.16,8 years,10.73,RENT,AZ,Jul-2012
+177,Current,78249.27,< 1 year,21.6,OTHER,AZ,Jun-2008
+178,Late (16-30 days),143476.56,3 years,0.0,OWN,TN,Dec-2012
+179,Late (31-120 days),39293.79,5 years,9.26,RENT,NY,Jul-2007
+180,Current,24268.48,4 years,24.36,MORTGAGE,NC,Oct-2008
+181,Does not meet the credit policy. Status:Charged Off,47002.56,< 1 year,13.31,MORTGAGE,MD,Sep-2007
+182,Fully Paid,62627.78,2 years,4.99,MORTGAGE,NY,Oct-2008
+183,Fully Paid,65348.42,10+ years,33.4,RENT,AZ,Feb-2014
+184,Current,62699.51,1 year,6.72,OWN,FL,May-2015
+185,Current,108163.05,9 years,13.81,MORTGAGE,GA,Apr-2015
+186,Fully Paid,97540.69,9 years,15.02,MORTGAGE,IL,Jan-2015
+187,Fully Paid,58417.22,4 years,18.67,OWN,NC,Jan-2010
+188,Late (31-120 days),47345.47,5 years,15.04,RENT,AZ,May-2015
+189,Charged Off,50362.17,9 years,17.35,RENT,AZ,Dec-2015
+190,Charged Off,50103.59,7 years,18.46,RENT,OH,Sep-2014
+191,Fully Paid,53487.34,9 years,17.31,OTHER,IL,Jun-2014
+192,Charged Off,27273.61,8 years,18.75,OWN,GA,Oct-2011
+193,Charged Off,47547.27,7 years,0.0,MORTGAGE,GA,Sep-2012
+194,Fully Paid,48414.76,10+ years,21.53,OWN,PA,Feb-2015
+195,Issued,54478.41,9 years,6.76,MORTGAGE,WA,Apr-2013
+196,Charged Off,52725.26,1 year,0.67,OWN,IL,Jul-2009
+197,Fully Paid,83784.52,8 years,29.05,MORTGAGE,GA,Feb-2007
+198,Current,45891.18,< 1 year,7.72,RENT,MD,May-2014
+199,Issued,48084.31,4 years,19.44,MORTGAGE,IL,Mar-2009
+200,Charged Off,78509.07,4 years,11.82,RENT,IL,Feb-2012

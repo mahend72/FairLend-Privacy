@@ -1,0 +1,3 @@
+object,poly_modulus_degree,active_moduli_bit_sizes,num_polys,bytes_per_coefficient,analytical_estimate_bytes,corresponding_measured_object,actual_measured_bytes,percentage_difference
+fresh_ciphertext_full_chain,8192,"[60, 40, 40, 60]",2,26,425984,one_encrypted_scalar,331540,-22.17078575721154
+post_compsim_ciphertext_one_level_down,8192,"[40, 60, 60]",2,21,344064,,,

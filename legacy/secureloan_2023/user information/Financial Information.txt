@@ -1,0 +1,6 @@
+FI={
+    "EmploymentStatus": "full time employee",
+    "Salary": "12000000",
+    "ExistingLoan" : "50000",
+    "Collateral" : "home"
+}

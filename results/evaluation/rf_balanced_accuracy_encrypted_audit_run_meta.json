@@ -1,0 +1,26 @@
+{
+  "alpha1": 0.7,
+  "ckks_config": {
+    "coeff_mod_bit_sizes": [
+      60,
+      40,
+      40,
+      60
+    ],
+    "global_scale_power": 40,
+    "poly_modulus_degree": 8192
+  },
+  "data_scope": "real_lendingclub",
+  "dataset_sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "git_commit": "fc62c4d4b62edf6ff9fe92f4e1e1fd29b03ac77f",
+  "git_dirty": true,
+  "model": "random_forest",
+  "records_processed": 177489,
+  "records_total": 177489,
+  "run_id": "e9ef4b95f79c43febe040fba47b2b5dc",
+  "run_timestamp_utc": "2026-09-06T16:43:06.534398+00:00",
+  "status": "completed",
+  "synthetic_seed": 0,
+  "tau": 0.8,
+  "threshold_policy": "validation_balanced_accuracy_max"
+}

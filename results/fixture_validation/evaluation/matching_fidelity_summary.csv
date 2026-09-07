@@ -1,0 +1,2 @@
+data_scope,is_real_lendingclub,n_runs,validation_n,test_n,delta_star_mean,delta_star_std,accuracy_mean,accuracy_std,macro_f1_mean,macro_f1_std,unmatched_rate_mean,unmatched_rate_std,combined_mae_mean,combined_mae_std,combined_max_abs_error_mean,combined_max_abs_error_std
+synthetic_fixture,False,10,18,38,0.95,0.0,1.0,0.0,1.0,0.0,0.0,0.0,2.0480134414441495e-07,2.1764564602782977e-07,2.7495055815465035e-07,2.2449987468987247e-07

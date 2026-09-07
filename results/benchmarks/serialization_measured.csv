@@ -1,0 +1,17 @@
+object,description,measured_bytes,measurement_method
+lpu_public_evaluation_context,"LPU's full public context (public key + Galois + relin keys, no secret key)",35291733,"ts.Context.serialize(save_secret_key=False, save_galois_keys=True, save_relin_keys=True)"
+public_key_material_only,Public key material in isolation (no Galois/relin keys),464938,"ts.Context.serialize(save_galois_keys=False, save_relin_keys=False)"
+galois_evaluation_material_delta,"Galois (rotation) key material, isolated as a size delta",33432117,delta of ts.Context.serialize() with/without save_galois_keys
+relinearization_material_delta,"Relinearization key material, isolated as a size delta",1394678,delta of ts.Context.serialize() with/without save_relin_keys
+fla_private_context_LENGTH_ONLY,"FLA private context -- LENGTH ONLY, secret bytes discarded immediately, never written",697484,len() computed transiently; actual bytes never stored (contains sk_HE)
+male_reference_vector,"HE.r_m, generated once by the FLA",331221,EncryptedReferenceVectors.male_reference_bytes
+female_reference_vector,"HE.r_f, generated once by the FLA",331331,EncryptedReferenceVectors.female_reference_bytes
+one_encrypted_scalar,A single fresh CKKS-encrypted scalar (size-1 vector),331540,ts.CKKSVector.serialize()
+encrypted_protected_attribute_pair,"HE.g_i -- the credential's own ciphertext bytes (one-hot, size-2 vector)",331060,ProtectedAttributeCredential.ciphertext_bytes
+encrypted_similarity_pair,"One EncryptedSimilarityPair (male+female compSim scores), serialized",470187,SerializedSimilarityPair field bytes summed
+bank_account_credential,"AccountCredential, canonical-JSON wire encoding",238,canonical_encode(dataclasses.asdict(AccountCredential))
+ca_score_credential,"ScoreCredential, canonical-JSON wire encoding",226,canonical_encode(dataclasses.asdict(ScoreCredential))
+ip_protected_attribute_credential,"ProtectedAttributeCredential, canonical-JSON wire encoding",662468,canonical_encode(dataclasses.asdict(ProtectedAttributeCredential))
+one_serialized_group_audit_counts,SerializedGroupAuditCounts (one group's 6 aggregate ciphertexts),1410665,sum of len() over the 6 stat ciphertext byte-strings for one group
+complete_encrypted_audit_packet,"Complete EncryptedAuditPacket (both groups, all 12 ciphertexts + metadata)",5642620,canonical_encode(dataclasses.asdict(EncryptedAuditPacket))
+ed25519_public_key,"Bank/CA/IP Ed25519 signature-verification public key, raw encoding",32,"Ed25519PublicKey.public_bytes(Encoding.Raw, PublicFormat.Raw)"

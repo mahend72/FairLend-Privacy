@@ -1,0 +1,26 @@
+#Sensitive information
+SI ={
+    "Gender" :"male",
+    "CasteCategory" : "Schedule Tribe",
+    "ReligiousBelief" : "Jain",
+    "SexualOrientation": "heterosexual",
+    "Racial" : "Northeast Indian"
+}
+
+"""
+Possible Categories
+Gender: {Male, Female, Transgender, Other}
+Caste Category: {Scheduled Tribe (ST), Scheduled Caste (SC), Other Backward Class (OBC), General (Unreserved), Economically Weaker Section (EWS), Other}
+Religious Belief: {Hindu, Muslim, Christian, Sikh, Jain, Buddhist, Parsi, Other}
+Sexual Orientation: {Heterosexual, Homosexual, Lesbian, Bisexual, Asexual, Other}
+Racial or Ethnic: {North Indian, South Indian, East Indian, West Indian, Kashmiri, Northeast Indian, Gujarati, Punjabi, Bengali, Other}
+"""
+
+"""
+Categories who can get benefits
+Gender: {Female, Transgender}
+Caste Category: {Scheduled Tribe (ST), Scheduled Caste (SC)}
+Religious Belief: {Muslim}
+Sexual Orientation: {}
+Racial or Ethnic: {Kashmiri, Northeast Indian}
+"""

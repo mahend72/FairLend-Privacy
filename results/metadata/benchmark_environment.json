@@ -1,0 +1,47 @@
+{
+  "ckks_config": {
+    "coeff_mod_bit_sizes": [
+      60,
+      40,
+      40,
+      60
+    ],
+    "global_scale_power": 40,
+    "poly_modulus_degree": 8192
+  },
+  "competing_load_note": "load average (1/5/15 min) = 1.23/1.08/0.80, 8 logical cores, competing load: low",
+  "cpu_model": "Intel(R) Core(TM) i7-10610U CPU @ 1.80GHz",
+  "cryptography_version": "45.0.5",
+  "full_scale_application_runs_observed_previously": {
+    "lr_encrypted_aggregation": {
+      "n_records": 177489,
+      "run_id": "9459dbee9e814e4bbe18745b8bf3fead",
+      "runtime_seconds": 5273.05
+    },
+    "matching_fidelity": {
+      "n_records": 266233,
+      "run_id": "cd08706ed9b4428fb232b89a7ac9d1b1",
+      "runtime_seconds": 7819.66
+    },
+    "rf_encrypted_aggregation": {
+      "n_records": 177489,
+      "run_id": "e9ef4b95f79c43febe040fba47b2b5dc",
+      "runtime_seconds": 5641.28
+    }
+  },
+  "git_commit": "fc62c4d4b62edf6ff9fe92f4e1e1fd29b03ac77f",
+  "git_dirty": true,
+  "is_wsl": true,
+  "kernel": "6.6.87.2-microsoft-standard-WSL2",
+  "logical_cores": 8,
+  "os": "Linux",
+  "os_release": "6.6.87.2-microsoft-standard-WSL2",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025",
+  "physical_cores": 4,
+  "platform_full": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.31",
+  "python_implementation": "CPython",
+  "python_version": "3.13.5",
+  "tenseal_version": "0.3.17",
+  "total_benchmark_wallclock_seconds": 562.2772108140052,
+  "total_ram_gb": 15.51
+}

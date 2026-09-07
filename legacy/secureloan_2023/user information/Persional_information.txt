@@ -1,0 +1,12 @@
+PII = {
+    "Name": "Mahesh Gupta",
+    "Address": "Abc, Gurgaon, Delhi",
+    "Gender" : "male",
+    "DateOfBirth": "12/10/1991",
+    "PhoneNumber": "9898001123"
+}
+
+#Biometric information
+
+bio_info = "shldhsncxiof2178"
+

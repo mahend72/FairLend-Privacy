@@ -1,0 +1,92 @@
+# FairLend evaluation configuration.
+#
+# This file is the single source of truth for scientific settings used by
+# the evaluation/ scripts and src/fairlend/data/*. Nothing here should be
+# duplicated as a hidden constant elsewhere -- if a script needs one of
+# these values, it loads this file (see
+# fairlend.core.config.load_evaluation_config).
+#
+# Manuscript reference: "FairLend: Privacy-Preserving Gender-Fairness
+# Auditing for Loan Processing", Sec. 6.1 (Experimental Setup).
+
+dataset:
+  # No default path is assumed. Must be supplied explicitly, e.g.:
+  #   python evaluation/prepare_lendingclub.py --input data/raw/loan.csv
+  input_path: null
+  split_seed: 42
+  train_fraction: 0.70
+  validation_fraction: 0.10
+  test_fraction: 0.20
+
+# Manuscript Sec. 6.1.1: "LendingClub Loan Data, 2007-2015." Public
+# Kaggle re-exports (e.g. accepted_2007_to_2018Q4.csv) cover a longer
+# period; records outside [start_year, end_year] (inclusive) are excluded
+# BEFORE outcome mapping and the train/validation/test split -- see
+# fairlend.data.lendingclub_schema.filter_to_issue_year_range. This is an
+# explicit, documented filtering rule, not a silent truncation.
+dataset_period:
+  issue_date_column: issue_d
+  start_year: 2007
+  end_year: 2015
+
+# Manuscript Sec. 6.8: "Y_i = 1 if the loan has a satisfactory repayment
+# outcome, Y_i = 0 if the loan defaults or has another adverse repayment
+# outcome." The manuscript does not enumerate raw LendingClub `loan_status`
+# strings; this mapping is our explicit, documented instantiation of that
+# definition, not a manuscript-specified table. Values not listed under
+# `positive` or `negative` are EXCLUDED from the realised-outcome
+# population (Y_i is undefined for them) -- they are NOT treated as
+# negative, and "Current"/"Issued"/in-progress loans are explicitly
+# excluded rather than counted as either outcome, consistent with the
+# manuscript's own statement (Sec. 6.8) that "repayment outcomes are
+# generally unavailable for rejected applicants" and its selective-label
+# caveat. Excluded records may still be valid *applications* (and so may
+# still contribute to C_k/A_k for demographic parity) -- only equalised-odds
+# computation (Sec. 4.8, retrospective) is restricted to resolved records.
+outcome_mapping:
+  positive:
+    - "Fully Paid"
+    - "Does not meet the credit policy. Status:Fully Paid"
+  negative:
+    - "Charged Off"
+    - "Default"
+    - "Does not meet the credit policy. Status:Charged Off"
+  excluded:
+    - "Current"
+    - "In Grace Period"
+    - "Late (16-30 days)"
+    - "Late (31-120 days)"
+    - "Issued"
+
+# Manuscript Sec. 6.1.1: synthetic protected-attribute generation.
+synthetic_attribute:
+  alpha0: 0.0
+  primary_alpha1: 0.7
+  alpha1_values: [0.0, 0.4, 0.7, 1.0, 1.3]
+  seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  # Winsorisation percentiles applied to continuous proxy components before
+  # standardisation (manuscript: "winsorised at the first and ninety-ninth
+  # percentiles"), fit on TRAIN only.
+  winsorize_lower_percentile: 1.0
+  winsorize_upper_percentile: 99.0
+  # "<1 year" and "10+ years" mappings and the training-median imputation
+  # rule are implemented in fairlend.data.proxy_features and are not
+  # duplicated here as separate config, since they are fixed string
+  # literals from the manuscript rather than tunable parameters.
+
+# Manuscript Sec. 4.6 / 6.1.4: CKKS parameters. Must match
+# fairlend.core.config.CKKSConfig exactly; kept here too so evaluation runs
+# can record what was actually used without importing Python to inspect it.
+ckks:
+  poly_modulus_degree: 8192
+  coeff_mod_bit_sizes: [60, 40, 40, 60]
+  global_scale_bits: 40
+
+# Manuscript Table 1 defines k_min ("minimum permitted aggregate cell size
+# required before a fairness statistic is released") but does NOT specify
+# its numeric value anywhere in the text. We do not invent one -- this
+# stays null (an explicit, documented experimental choice, not a
+# manuscript figure) until a value is deliberately chosen and justified;
+# code that needs k_min must fail loudly rather than silently default it.
+fairness:
+  minimum_cell_size: null

@@ -1,0 +1,48 @@
+{
+  "alpha1": 0.7,
+  "ckks_config": {
+    "coeff_mod_bit_sizes": [
+      60,
+      40,
+      40,
+      60
+    ],
+    "global_scale_power": 40,
+    "poly_modulus_degree": 8192
+  },
+  "data_scope": "real_lendingclub",
+  "dataset_sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "delta_star_grid": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "delta_star_mean": 0.95,
+  "delta_star_selection_method": "largest threshold in DELTA_STAR_GRID achieving the maximum VALIDATION matching accuracy (ties broken toward the larger threshold, widening the conservative 'unmatched' rejection zone without sacrificing validation accuracy) -- an implementation choice, not a manuscript-prescribed algorithm; see fairlend.audit.matching's module docstring and docs/MANUSCRIPT_EVIDENCE_STATUS.md.",
+  "delta_star_std": 0.0,
+  "delta_star_values_across_runs": [
+    0.95
+  ],
+  "git_commit": "fc62c4d4b62edf6ff9fe92f4e1e1fd29b03ac77f",
+  "is_real_lendingclub": true,
+  "n_runs": 1,
+  "synthetic_seed": 0,
+  "test_n": 177489,
+  "validation_n": 88744
+}

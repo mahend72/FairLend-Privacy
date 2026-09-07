@@ -1,0 +1,21 @@
+# Raw / processed / cached data -- never commit LendingClub (or any other)
+# dataset files. See data/README.md for how to obtain and prepare the
+# dataset locally.
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+build/
+dist/
+
+# Editors / OS
+.DS_Store

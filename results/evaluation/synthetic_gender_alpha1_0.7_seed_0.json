@@ -1,0 +1,10 @@
+{
+  "alpha0": 0.0,
+  "alpha1": 0.7,
+  "data_scope": "real_lendingclub",
+  "female_fraction": 0.5037895519697106,
+  "is_real_lendingclub": true,
+  "n_records": 887440,
+  "output_path": "data/processed/synthetic_gender_alpha1_0.7_seed_0.parquet",
+  "seed": 0
+}

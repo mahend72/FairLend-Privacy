@@ -1,0 +1,41 @@
+{
+  "data_scope": "real_lendingclub",
+  "final_audit_populations": {
+    "test_dp": 177489,
+    "test_eo": 165872,
+    "train_model_fit": 580547,
+    "validation_model_select": 82936
+  },
+  "is_real_lendingclub": true,
+  "note": "train/validation/test_audit_population partition ALL records (resolved + unresolved outcome). final_audit_populations.train_model_fit / .validation_model_select are the resolved-outcome subsets of TRAIN/VALIDATION eligible for model fitting/selection. final_audit_populations.test_dp (== test_audit_population, all TEST rows) is the demographic-parity population; .test_eo (== resolved_test) is the equalised-odds population. No train/validation record can appear in either final population -- see fairlend.data.audit_scope.FinalAuditPopulations.assert_no_train_or_validation_leakage, checked above.",
+  "population_counts": {
+    "audit_eligible": 887440,
+    "model_eligible": 829355,
+    "unresolved_outcome": 58085
+  },
+  "resolved_test": 165872,
+  "split_seed": 42,
+  "test_audit_population": 177489,
+  "test_fraction": 0.2,
+  "test_outcome_counts": {
+    "0": 30613,
+    "1": 135259,
+    "<NA>": 11617
+  },
+  "total_audit_population": 887440,
+  "train_audit_population": 621207,
+  "train_fraction": 0.7,
+  "train_outcome_counts": {
+    "0": 107145,
+    "1": 473402,
+    "<NA>": 40660
+  },
+  "unresolved_test": 11617,
+  "validation_audit_population": 88744,
+  "validation_fraction": 0.1,
+  "validation_outcome_counts": {
+    "0": 15307,
+    "1": 67629,
+    "<NA>": 5808
+  }
+}

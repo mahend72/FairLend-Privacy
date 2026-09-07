@@ -1,0 +1,3 @@
+model,data_scope,is_real_lendingclub,alpha1,seed,test_population_n,resolved_test_n,unresolved_test_n,C_m,C_f,A_m,A_f,P_m,P_f,TP_m,TP_f,N_m,N_f,FP_m,FP_f,approval_rate_m,approval_rate_f,TPR_m,TPR_f,FPR_m,FPR_f,DP_plain,EO_plain,minimum_cell_size,DP_release_status,EO_release_status
+logistic_regression,real_lendingclub,True,0.7,0,177489,165872,11617,88203,89286,88203,89286,67790,67469,67790,67469,15219,15394,15219,15394,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,,minimum_cell_size_not_configured,minimum_cell_size_not_configured
+random_forest,real_lendingclub,True,0.7,0,177489,165872,11617,88203,89286,88203,89286,67790,67469,67790,67469,15219,15394,15219,15394,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,,minimum_cell_size_not_configured,minimum_cell_size_not_configured

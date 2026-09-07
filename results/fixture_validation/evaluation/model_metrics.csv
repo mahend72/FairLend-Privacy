@@ -1,0 +1,3 @@
+data_scope,is_real_lendingclub,n_train,n_validation,model,hyperparameters,selection_metric,selection_score,threshold,n_test_predictions,n_test_resolved_for_metrics,n_predictions,positive_rate,predicted_positive_rate,accuracy,precision,recall,f1,roc_auc
+synthetic_fixture,False,87,12,logistic_regression,"{""C"": 0.01}",validation_roc_auc,0.8,0.6,38,25,25,0.64,0.92,0.64,0.6521739130434783,0.9375,0.7692307692307693,0.638888888888889
+synthetic_fixture,False,87,12,random_forest,"{""max_depth"": null, ""n_estimators"": 300}",validation_roc_auc,0.5428571428571428,0.05,38,25,25,0.64,1.0,0.64,0.64,1.0,0.7804878048780488,0.6423611111111112

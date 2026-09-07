@@ -1,0 +1,14 @@
+row_type,path,object,measured_bytes,category,notes
+communication_path,IP -> Borrower,encrypted_protected_attribute_pair (as part of the IP credential),662468,per_application,"Full ProtectedAttributeCredential, canonical-JSON wire encoding."
+communication_path,Borrower -> LPU,bank_account_credential,238,per_application,
+communication_path,Borrower -> LPU,ca_score_credential,226,per_application,
+communication_path,Borrower -> LPU,ip_protected_attribute_credential,662468,per_application,
+communication_path,LPU -> FLA,complete_encrypted_audit_packet,5642620,per_audit_batch,"ONE packet per audit run, regardless of population size."
+communication_path,FLA -> LPU (setup),lpu_public_evaluation_context,35291733,one_time_setup,
+communication_path,FLA -> LPU (setup),male_reference_vector,331221,one_time_setup,
+communication_path,FLA -> LPU (setup),female_reference_vector,331331,one_time_setup,
+projection,"n=1 applications (DERIVED PROJECTION, not a network measurement)",fixed_setup + n*per_application + one_audit_packet,42922305,derived_projection,"fixed_setup_bytes=35954285, per_application_bytes=1325400, audit_packet_bytes=5642620, n=1"
+projection,"n=100 applications (DERIVED PROJECTION, not a network measurement)",fixed_setup + n*per_application + one_audit_packet,174136905,derived_projection,"fixed_setup_bytes=35954285, per_application_bytes=1325400, audit_packet_bytes=5642620, n=100"
+projection,"n=1000 applications (DERIVED PROJECTION, not a network measurement)",fixed_setup + n*per_application + one_audit_packet,1366996905,derived_projection,"fixed_setup_bytes=35954285, per_application_bytes=1325400, audit_packet_bytes=5642620, n=1000"
+projection,"n=10000 applications (DERIVED PROJECTION, not a network measurement)",fixed_setup + n*per_application + one_audit_packet,13295596905,derived_projection,"fixed_setup_bytes=35954285, per_application_bytes=1325400, audit_packet_bytes=5642620, n=10000"
+projection,"n=100000 applications (DERIVED PROJECTION, not a network measurement)",fixed_setup + n*per_application + one_audit_packet,132581596905,derived_projection,"fixed_setup_bytes=35954285, per_application_bytes=1325400, audit_packet_bytes=5642620, n=100000"

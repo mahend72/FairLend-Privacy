@@ -1,0 +1,152 @@
+[
+  {
+    "A_f": 89286,
+    "A_m": 88203,
+    "C_f": 89286,
+    "C_m": 88203,
+    "DP_plain": 0.0,
+    "DP_release_status": "minimum_cell_size_not_configured",
+    "EO_plain": 0.0,
+    "EO_release_status": "minimum_cell_size_not_configured",
+    "FPR_f": 1.0,
+    "FPR_m": 1.0,
+    "FP_f": 15394,
+    "FP_m": 15219,
+    "N_f": 15394,
+    "N_m": 15219,
+    "P_f": 67469,
+    "P_m": 67790,
+    "TPR_f": 1.0,
+    "TPR_m": 1.0,
+    "TP_f": 67469,
+    "TP_m": 67790,
+    "_detail": {
+      "DP_plain": {
+        "available": true,
+        "reason": null,
+        "value": 0.0
+      },
+      "EO_plain": {
+        "available": true,
+        "reason": null,
+        "value": 0.0
+      },
+      "FPR_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "FPR_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "TPR_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "TPR_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "approval_rate_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "approval_rate_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      }
+    },
+    "alpha1": 0.7,
+    "approval_rate_f": 1.0,
+    "approval_rate_m": 1.0,
+    "data_scope": "real_lendingclub",
+    "is_real_lendingclub": true,
+    "minimum_cell_size": null,
+    "model": "logistic_regression",
+    "resolved_test_n": 165872,
+    "seed": 0,
+    "test_population_n": 177489,
+    "unresolved_test_n": 11617
+  },
+  {
+    "A_f": 89286,
+    "A_m": 88203,
+    "C_f": 89286,
+    "C_m": 88203,
+    "DP_plain": 0.0,
+    "DP_release_status": "minimum_cell_size_not_configured",
+    "EO_plain": 0.0,
+    "EO_release_status": "minimum_cell_size_not_configured",
+    "FPR_f": 1.0,
+    "FPR_m": 1.0,
+    "FP_f": 15394,
+    "FP_m": 15219,
+    "N_f": 15394,
+    "N_m": 15219,
+    "P_f": 67469,
+    "P_m": 67790,
+    "TPR_f": 1.0,
+    "TPR_m": 1.0,
+    "TP_f": 67469,
+    "TP_m": 67790,
+    "_detail": {
+      "DP_plain": {
+        "available": true,
+        "reason": null,
+        "value": 0.0
+      },
+      "EO_plain": {
+        "available": true,
+        "reason": null,
+        "value": 0.0
+      },
+      "FPR_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "FPR_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "TPR_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "TPR_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "approval_rate_f": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      },
+      "approval_rate_m": {
+        "available": true,
+        "reason": null,
+        "value": 1.0
+      }
+    },
+    "alpha1": 0.7,
+    "approval_rate_f": 1.0,
+    "approval_rate_m": 1.0,
+    "data_scope": "real_lendingclub",
+    "is_real_lendingclub": true,
+    "minimum_cell_size": null,
+    "model": "random_forest",
+    "resolved_test_n": 165872,
+    "seed": 0,
+    "test_population_n": 177489,
+    "unresolved_test_n": 11617
+  }
+]

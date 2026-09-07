@@ -1,0 +1,126 @@
+{
+  "all_rounded_counts_match_plaintext": true,
+  "alpha1": 0.7,
+  "any_per_record_decryption_occurred": false,
+  "ckks_config": {
+    "coeff_mod_bit_sizes": [
+      60,
+      40,
+      40,
+      60
+    ],
+    "global_scale_power": 40,
+    "poly_modulus_degree": 8192
+  },
+  "data_scope": "real_lendingclub",
+  "dataset_sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "git_commit": "fc62c4d4b62edf6ff9fe92f4e1e1fd29b03ac77f",
+  "git_dirty": true,
+  "is_real_lendingclub": true,
+  "lpu_ever_held_sk_he": false,
+  "max_absolute_error": 0.011685585719533265,
+  "mean_absolute_error": 0.006216534767342334,
+  "model": "logistic_regression",
+  "packet_protocol_version": "fairlend/encrypted-audit/v1",
+  "packet_sha256": "fc5de1971041d36bc082f96564d59fa598cea18453cbcc1d841cccb68179f2b5",
+  "records_per_second": 33.659658410169605,
+  "reference_fingerprint": "b9d0774f2e23db94972c73ecf1e45b7dec7a10dbfec8062de37b7f4edec87d78",
+  "resolved_test_n": 165872,
+  "run_id": "9459dbee9e814e4bbe18745b8bf3fead",
+  "run_timestamp_utc": "2026-09-06T12:27:19.365971+00:00",
+  "runtime_seconds": 5273.048164576001,
+  "statistics": {
+    "A_f": {
+      "absolute_error": 0.007699029003561009,
+      "matches_plaintext": true,
+      "plaintext_count": 58828,
+      "raw_decrypted_count": 58828.007699029,
+      "rounded_encrypted_count": 58828
+    },
+    "A_m": {
+      "absolute_error": 0.007605521124787629,
+      "matches_plaintext": true,
+      "plaintext_count": 58170,
+      "raw_decrypted_count": 58170.007605521125,
+      "rounded_encrypted_count": 58170
+    },
+    "C_f": {
+      "absolute_error": 0.011685585719533265,
+      "matches_plaintext": true,
+      "plaintext_count": 89286,
+      "raw_decrypted_count": 89286.01168558572,
+      "rounded_encrypted_count": 89286
+    },
+    "C_m": {
+      "absolute_error": 0.011531898446264677,
+      "matches_plaintext": true,
+      "plaintext_count": 88203,
+      "raw_decrypted_count": 88203.01153189845,
+      "rounded_encrypted_count": 88203
+    },
+    "FP_f": {
+      "absolute_error": 0.0011307951936032623,
+      "matches_plaintext": true,
+      "plaintext_count": 8641,
+      "raw_decrypted_count": 8641.001130795194,
+      "rounded_encrypted_count": 8641
+    },
+    "FP_m": {
+      "absolute_error": 0.001125507911638124,
+      "matches_plaintext": true,
+      "plaintext_count": 8607,
+      "raw_decrypted_count": 8607.001125507912,
+      "rounded_encrypted_count": 8607
+    },
+    "N_f": {
+      "absolute_error": 0.0020147152044955874,
+      "matches_plaintext": true,
+      "plaintext_count": 15394,
+      "raw_decrypted_count": 15394.002014715204,
+      "rounded_encrypted_count": 15394
+    },
+    "N_m": {
+      "absolute_error": 0.0019897384627256542,
+      "matches_plaintext": true,
+      "plaintext_count": 15219,
+      "raw_decrypted_count": 15219.001989738463,
+      "rounded_encrypted_count": 15219
+    },
+    "P_f": {
+      "absolute_error": 0.008828223988530226,
+      "matches_plaintext": true,
+      "plaintext_count": 67469,
+      "raw_decrypted_count": 67469.00882822399,
+      "rounded_encrypted_count": 67469
+    },
+    "P_m": {
+      "absolute_error": 0.008865018957294524,
+      "matches_plaintext": true,
+      "plaintext_count": 67790,
+      "raw_decrypted_count": 67790.00886501896,
+      "rounded_encrypted_count": 67790
+    },
+    "TP_f": {
+      "absolute_error": 0.006066950751119293,
+      "matches_plaintext": true,
+      "plaintext_count": 46363,
+      "raw_decrypted_count": 46363.00606695075,
+      "rounded_encrypted_count": 46363
+    },
+    "TP_m": {
+      "absolute_error": 0.006055432444554754,
+      "matches_plaintext": true,
+      "plaintext_count": 46309,
+      "raw_decrypted_count": 46309.006055432445,
+      "rounded_encrypted_count": 46309
+    }
+  },
+  "status": "completed",
+  "synthetic_seed": 0,
+  "tau": 0.8,
+  "test_approval_count": 116998,
+  "test_approval_rate": 0.6591845128430495,
+  "test_population_n": 177489,
+  "threshold_policy": "validation_balanced_accuracy_max",
+  "unresolved_test_n": 11617
+}

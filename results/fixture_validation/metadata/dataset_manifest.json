@@ -1,0 +1,18 @@
+{
+  "columns": [
+    "id",
+    "loan_status",
+    "annual_inc",
+    "emp_length",
+    "dti",
+    "home_ownership",
+    "addr_state",
+    "issue_d"
+  ],
+  "data_scope": "synthetic_fixture",
+  "input_path": "tests/fixtures/lendingclub_sample.csv",
+  "is_real_lendingclub": false,
+  "raw_column_count": 8,
+  "raw_row_count": 200,
+  "sha256": "fe16d20e9f5ec4d6116f7ff27920c4528d5f186c37689517901385526cc34df9"
+}

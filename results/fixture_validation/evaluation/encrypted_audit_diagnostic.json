@@ -1,0 +1,230 @@
+{
+  "reports": [
+    {
+      "aggregation_seconds": 0.659400511009153,
+      "aggregation_seconds_per_record": 0.017352645026556656,
+      "all_rounded_counts_match_plaintext": true,
+      "ckks_config": {
+        "coeff_mod_bit_sizes": [
+          60,
+          40,
+          40,
+          60
+        ],
+        "global_scale_power": 40,
+        "poly_modulus_degree": 8192
+      },
+      "data_scope": "synthetic_fixture",
+      "is_real_lendingclub": false,
+      "max_absolute_error": 1.9685291988480458e-05,
+      "mean_absolute_error": 1.0001432762307694e-05,
+      "model": "logistic_regression",
+      "packet_protocol_version": "fairlend/encrypted-audit/v1",
+      "packet_sha256": "6b9b6b8d24d75b1c05a00eead35bcdbc79f7012ab6401ff0fb77546937622d05",
+      "resolved_test_n": 25,
+      "run_id": "70ab05b627ab448aaf586c8dab01068d",
+      "run_timestamp_utc": "2026-09-06T00:48:39.337773+00:00",
+      "statistics": {
+        "A_f": {
+          "absolute_error": 1.5647510501537454e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 16,
+          "raw_decrypted_value": 16.0000156475105,
+          "rounded_value": 16
+        },
+        "A_m": {
+          "absolute_error": 1.5400250962471773e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 14,
+          "raw_decrypted_value": 14.000015400250962,
+          "rounded_value": 14
+        },
+        "C_f": {
+          "absolute_error": 1.964217488747977e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.000019642174887,
+          "rounded_value": 19
+        },
+        "C_m": {
+          "absolute_error": 1.9685291988480458e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.00001968529199,
+          "rounded_value": 19
+        },
+        "FP_f": {
+          "absolute_error": 4.269314030302951e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 5,
+          "raw_decrypted_value": 5.00000426931403,
+          "rounded_value": 5
+        },
+        "FP_m": {
+          "absolute_error": 4.001817729193391e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 3,
+          "raw_decrypted_value": 3.000004001817729,
+          "rounded_value": 3
+        },
+        "N_f": {
+          "absolute_error": 4.7167746961562784e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 5,
+          "raw_decrypted_value": 5.000004716774696,
+          "rounded_value": 5
+        },
+        "N_m": {
+          "absolute_error": 4.583989819728629e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 4,
+          "raw_decrypted_value": 4.00000458398982,
+          "rounded_value": 4
+        },
+        "P_f": {
+          "absolute_error": 8.413209123148135e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 9,
+          "raw_decrypted_value": 9.000008413209123,
+          "rounded_value": 9
+        },
+        "P_m": {
+          "absolute_error": 8.138224064424548e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 7,
+          "raw_decrypted_value": 7.000008138224064,
+          "rounded_value": 7
+        },
+        "TP_f": {
+          "absolute_error": 7.832930606355148e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 8,
+          "raw_decrypted_value": 8.000007832930606,
+          "rounded_value": 8
+        },
+        "TP_m": {
+          "absolute_error": 7.68570473841379e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 7,
+          "raw_decrypted_value": 7.000007685704738,
+          "rounded_value": 7
+        }
+      },
+      "test_population_n": 38,
+      "unresolved_test_n": 13
+    },
+    {
+      "aggregation_seconds": 0.5849530010018498,
+      "aggregation_seconds_per_record": 0.015393500026364467,
+      "all_rounded_counts_match_plaintext": true,
+      "ckks_config": {
+        "coeff_mod_bit_sizes": [
+          60,
+          40,
+          40,
+          60
+        ],
+        "global_scale_power": 40,
+        "poly_modulus_degree": 8192
+      },
+      "data_scope": "synthetic_fixture",
+      "is_real_lendingclub": false,
+      "max_absolute_error": 1.969676898738726e-05,
+      "mean_absolute_error": 1.0864179103749668e-05,
+      "model": "random_forest",
+      "packet_protocol_version": "fairlend/encrypted-audit/v1",
+      "packet_sha256": "968f75ccb5a192cadce1df8411d2cad4ccf384ce8deca3ea99ea4f3bb223685d",
+      "resolved_test_n": 25,
+      "run_id": "70ab05b627ab448aaf586c8dab01068d",
+      "run_timestamp_utc": "2026-09-06T00:48:39.337773+00:00",
+      "statistics": {
+        "A_f": {
+          "absolute_error": 1.963173236774196e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.000019631732368,
+          "rounded_value": 19
+        },
+        "A_m": {
+          "absolute_error": 1.969676898738726e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.000019696768987,
+          "rounded_value": 19
+        },
+        "C_f": {
+          "absolute_error": 1.9633778897798493e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.000019633778898,
+          "rounded_value": 19
+        },
+        "C_m": {
+          "absolute_error": 1.9696651310852076e-05,
+          "matches_plaintext": true,
+          "plaintext_count": 19,
+          "raw_decrypted_value": 19.00001969665131,
+          "rounded_value": 19
+        },
+        "FP_f": {
+          "absolute_error": 4.704818758582974e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 5,
+          "raw_decrypted_value": 5.000004704818759,
+          "rounded_value": 5
+        },
+        "FP_m": {
+          "absolute_error": 4.610635834012555e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 4,
+          "raw_decrypted_value": 4.000004610635834,
+          "rounded_value": 4
+        },
+        "N_f": {
+          "absolute_error": 4.701703755216613e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 5,
+          "raw_decrypted_value": 5.000004701703755,
+          "rounded_value": 5
+        },
+        "N_m": {
+          "absolute_error": 4.609398559729527e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 4,
+          "raw_decrypted_value": 4.00000460939856,
+          "rounded_value": 4
+        },
+        "P_f": {
+          "absolute_error": 8.401121107226572e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 9,
+          "raw_decrypted_value": 9.000008401121107,
+          "rounded_value": 9
+        },
+        "P_m": {
+          "absolute_error": 8.140736980521979e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 7,
+          "raw_decrypted_value": 7.0000081407369805,
+          "rounded_value": 7
+        },
+        "TP_f": {
+          "absolute_error": 8.40197934159903e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 9,
+          "raw_decrypted_value": 9.000008401979342,
+          "rounded_value": 9
+        },
+        "TP_m": {
+          "absolute_error": 8.140823344326975e-06,
+          "matches_plaintext": true,
+          "plaintext_count": 7,
+          "raw_decrypted_value": 7.000008140823344,
+          "rounded_value": 7
+        }
+      },
+      "test_population_n": 38,
+      "unresolved_test_n": 13
+    }
+  ]
+}

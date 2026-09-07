@@ -1,0 +1,10 @@
+{
+  "alpha0": 0.0,
+  "alpha1": 0.7,
+  "data_scope": "synthetic_fixture",
+  "female_fraction": 0.41621621621621624,
+  "is_real_lendingclub": false,
+  "n_records": 185,
+  "output_path": "/tmp/claude-1000/-mnt-c-Users-kumar2-m-FairLend-Privacy-Preserving-Fair-Loan-Processing/de8a8e78-ce5c-4268-9d47-6dc9dcc787c0/scratchpad/processed/synthetic_gender_alpha1_0.7_seed_0.parquet",
+  "seed": 0
+}
