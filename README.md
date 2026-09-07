@@ -239,6 +239,12 @@ benchmarked.
 
 ## Installation
 
+The distribution is named **`fairlend-privacy`** on PyPI; the Python
+import namespace is **`fairlend`** (`import fairlend`,
+`from fairlend.secure_compute import ...`).
+
+### Development install (this repository)
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -250,6 +256,67 @@ Requires Python ≥ 3.10 (see `pyproject.toml`). TenSEAL wheel availability
 was verified for Python 3.10 and 3.12 (see CI below); other supported
 versions should generally work but have not all been individually
 checked here.
+
+### Future release install
+
+`fairlend-privacy` is **not yet published to PyPI**. Once it is
+(see `docs/PUBLISHING.md`), installation will be:
+
+```bash
+pip install fairlend-privacy
+```
+
+Do not attempt this yet — it will fail until a release is published.
+
+### Library usage
+
+```python
+from fairlend.secure_compute import build_fla_context, derive_lpu_context
+
+fla_context = build_fla_context()
+lpu_context = derive_lpu_context(fla_context)
+assert fla_context.has_secret_key()
+assert not lpu_context.has_secret_key()
+```
+
+```python
+from fairlend.credentials import ProtectedAttributeCredential
+from fairlend.audit import compute_demographic_parity, compute_equalised_odds
+```
+
+See `docs/PACKAGE_API.md` for the full public API reference.
+
+## Container image
+
+**PyPI package (`fairlend-privacy`) and GitHub Container (GHCR image)
+are two separate distribution channels** — installing one does not
+require or install the other; pick whichever fits your workflow.
+
+Tagged releases (`v*`) are configured to publish a container image to
+GitHub Container Registry at:
+
+```
+ghcr.io/mahend72/fairlend-privacy
+```
+
+No tagged release has been published yet, so no image currently exists
+at that path — the workflow (`.github/workflows/container.yml`) only
+runs on a pushed `v*` tag. Once a release such as `v0.1.0` has been
+tagged and the workflow has run, it will be pullable as:
+
+```bash
+docker pull ghcr.io/mahend72/fairlend-privacy:v0.1.0
+docker run --rm ghcr.io/mahend72/fairlend-privacy:v0.1.0
+```
+
+The image is a minimal research-library container (not a web service):
+its default command runs an `import fairlend` smoke test. To build it
+locally from this repository before any release exists:
+
+```bash
+docker build -t fairlend-privacy:local .
+docker run --rm fairlend-privacy:local
+```
 
 ## Run the test suite
 

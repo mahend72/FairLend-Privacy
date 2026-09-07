@@ -15,4 +15,11 @@ the implementation phase that will fill them in, rather than silently
 stubbing out manuscript behaviour.
 """
 
-__version__ = "0.1.0.dev0"
+from importlib import metadata as _metadata
+
+try:
+    __version__ = _metadata.version("fairlend-privacy")
+except _metadata.PackageNotFoundError:  # pragma: no cover - not installed
+    __version__ = "0.0.0+unknown"
+
+del _metadata

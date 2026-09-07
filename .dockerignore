@@ -1,0 +1,53 @@
+# Build-context exclusions for the FairLend-Privacy container image.
+# Keep this in sync with .gitignore's data/results intent -- the image
+# must never bundle a dataset, credential material, or unrelated tooling
+# state, even though these directories exist in the repository checkout.
+
+# Version control / CI
+.git
+.github
+
+# Python virtual environments / build artifacts
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+dist
+build
+*.egg-info
+
+# Datasets -- never bundle raw, processed, or cached data
+data/raw
+data/processed
+data/cache
+
+# Research artifacts / legacy prototype / tests not needed at runtime
+legacy
+results
+tests
+docs
+evaluation
+configs
+
+# Editors / OS
+.DS_Store
+.idea
+.vscode
+
+# Claude Code / assistant state
+.claude
+
+# Secrets / key material -- defense in depth (also covered by legacy/ above)
+*.pem
+*.key
+*.env
+.env
+
+# Misc large or local-only artifacts
+*.parquet
+*.csv

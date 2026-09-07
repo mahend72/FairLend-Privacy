@@ -84,9 +84,8 @@ re-encrypting to "fix" a level mismatch, since no such fix is needed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Sequence, Tuple
 
-import pandas as pd
 import tenseal as ts
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
@@ -94,6 +93,21 @@ from fairlend.audit.similarity import LoadedReferenceVectors, comp_sim
 from fairlend.core.exceptions import KeyBoundaryError, MalformedCiphertextError
 from fairlend.credentials.protected_attribute import ProtectedAttributeCredential
 from fairlend.crypto.ckks import context_can_decrypt
+
+if TYPE_CHECKING:
+    # pandas is an evaluation-extra dependency (see pyproject.toml), not a
+    # core dependency: this module's actual encrypted-compute functions
+    # (compute_encrypted_audit, build_encrypted_aggregate_packet,
+    # decrypt_audit_packet_for_diagnostics) never touch a DataFrame. Only
+    # the plaintext-oracle helpers below (build_audit_frame,
+    # compute_group_counts, compute_plaintext_audit) operate on pandas
+    # objects, and `from __future__ import annotations` (above) already
+    # makes every `pd.DataFrame`/`pd.Index` annotation in this file a
+    # lazily-evaluated string -- so importing pandas only under
+    # TYPE_CHECKING costs nothing at runtime and keeps
+    # `fairlend.secure_compute`/`fairlend.audit` importable with only the
+    # core dependency set.
+    import pandas as pd
 
 GROUP_MALE = "male"
 GROUP_FEMALE = "female"
