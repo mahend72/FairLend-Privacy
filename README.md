@@ -35,6 +35,14 @@ plaintext, and the FLA that decrypts fairness-relevant information never
 receives anything more granular than the final per-group aggregate
 counts.
 
+## GitHub Package
+
+FairLend-Privacy is also available as a public container image:
+
+```bash
+docker pull ghcr.io/mahend72/fairlend-privacy:latest
+```
+
 ## Architecture
 
 ```mermaid
