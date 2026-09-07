@@ -5,6 +5,7 @@ Privacy-preserving protected-attribute fairness auditing for loan-processing sys
 [![Tests](https://github.com/mahend72/FairLend-Privacy/actions/workflows/tests.yml/badge.svg)](https://github.com/mahend72/FairLend-Privacy/actions/workflows/tests.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENCE.txt)
+[![GHCR](https://img.shields.io/badge/GHCR-v0.1.0-blue?logo=docker)](https://github.com/users/mahend72/packages/container/package/fairlend-privacy)
 
 
 FairLend audits an *already-made* set of loan-approval decisions for
