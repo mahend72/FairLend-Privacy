@@ -2,7 +2,7 @@
 
 Privacy-preserving protected-attribute fairness auditing for loan-processing systems.
 
-[![Tests](https://github.com/mahend72/FairLend-Privacy-Preserving-Fair-Loan-Processing/actions/workflows/tests.yml/badge.svg)](https://github.com/mahend72/FairLend-Privacy-Preserving-Fair-Loan-Processing/actions/workflows/tests.yml)
+[![Tests](https://github.com/mahend72/FairLend-Privacy/actions/workflows/tests.yml/badge.svg)](https://github.com/mahend72/FairLend-Privacy/actions/workflows/tests.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENCE.txt)
 
