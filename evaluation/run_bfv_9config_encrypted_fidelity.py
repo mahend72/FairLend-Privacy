@@ -183,7 +183,7 @@ def main() -> int:
             gender_path = output_dir / f"bfv_synthetic_gender_alpha1_{alpha1}_seed_{seed}.parquet"
             old_argv = sys.argv
             sys.argv = [
-                "g", "--input", str(Path(args.split_dir).parent / "loan_with_outcome.parquet"),
+                "g", "--input", str(Path(args.split_dir) / "loan_with_outcome.parquet"),
                 "--split-dir", args.split_dir, "--alpha1", str(alpha1), "--seed", str(seed),
                 "--output", str(gender_path), "--data-scope", "real_lendingclub", "--config", args.config,
             ]

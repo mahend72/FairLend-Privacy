@@ -1,0 +1,13 @@
+{
+  "dataset_sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "git_commit": "1cdd61a57dca1d208e8b5b75884995ff864be807",
+  "git_dirty": true,
+  "max_absolute_count_error": 0.0,
+  "max_dp_reconstruction_difference": 0.0,
+  "max_eo_reconstruction_difference": 0.0,
+  "mean_absolute_count_error": 0.0,
+  "n_configurations": 9,
+  "n_count_comparisons": 108,
+  "n_exact_matches": 108,
+  "timestamp_utc": "2026-09-30T08:24:06.531242+00:00"
+}

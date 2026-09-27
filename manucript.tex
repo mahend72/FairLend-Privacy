@@ -115,7 +115,7 @@ Algorithmic credit-scoring systems may reproduce historical disparities while op
 
 FairLend uses BFV-based homomorphic encryption for protected-attribute aggregation and non-interactive zero-knowledge proofs (NIZKPs) for account-credential validity, credit-score authenticity, and binding between the submitted application components. A trusted Identity Provider observes the plaintext protected attribute, issues the encrypted protected-attribute representation, and signs its ciphertext digest, allowing the LPU to verify its authenticity without learning the protected attribute. Gender is encoded as an encrypted one-hot integer vector, and the audit path aggregates these vectors directly by ciphertext addition, at multiplicative depth zero, so that decryption of an aggregate statistic yields an exact integer group count with no rounding step. An earlier design revision of this work used CKKS-based encrypted similarity matching (\textsf{compSim}) against encrypted reference vectors; because the reference vectors reduce to selecting the credential's own one-hot coordinates, this step was found to be unnecessary for the aggregation the audit actually performs and has been removed from the active protocol (retained only as a superseded design variant for comparison).
 
-We present a controlled evaluation design based on the public LendingClub dataset, which does not contain observed gender labels. A synthetic binary protected attribute correlated with selected non-sensitive proxy variables is used to define a reproducible proxy-discrimination setting, and we report measured proxy-inference AUC and plaintext demographic-parity/equalised-odds sensitivity across repeated synthetic-label seeds and proxy-correlation strengths on the real LendingClub population. Exact encrypted-vs-plaintext count reconstruction and fairness-metric equivalence are demonstrated for the active BFV protocol at fixture/controlled scale; a repeated-seed encrypted-fidelity evaluation on the full real-data population is specified but not yet executed, pending availability of the exact raw dataset release used for the other real-data measurements reported here. A concrete Groth16 instantiation of one NIZKP relation (account-credential validity) is implemented and benchmarked, using circuit-compatible substitutes for the manuscript's generic signature and commitment primitives; the remaining two relations are formalised at the protocol level only. FairLend should therefore be understood as a privacy-preserving fairness-auditing architecture and proof-of-concept protocol design rather than a complete bias-mitigation mechanism, a fully end-to-end encrypted credit-scoring system, or a completed production benchmark.
+We present a controlled evaluation design based on the public LendingClub dataset, which does not contain observed gender labels. A synthetic binary protected attribute correlated with selected non-sensitive proxy variables is used to define a reproducible proxy-discrimination setting, and we report measured proxy-inference AUC and plaintext demographic-parity/equalised-odds sensitivity across repeated synthetic-label seeds and proxy-correlation strengths on the real LendingClub population. Exact encrypted-vs-plaintext count reconstruction and fairness-metric equivalence are demonstrated for the active BFV protocol at fixture scale and on the full 177{,}489-record real-data TEST partition across the complete five-$\alpha_1$ $\times$ ten-seed grid (50 configurations, logistic regression): all 600 aggregate-count comparisons matched exactly, with zero demographic-parity and equalised-odds reconstruction error. Random forest is evaluated in the plaintext sensitivity analysis but not under BFV encryption. A concrete Groth16 instantiation of one NIZKP relation (account-credential validity) is implemented and benchmarked, using circuit-compatible substitutes for the manuscript's generic signature and commitment primitives; the remaining two relations are formalised at the protocol level only. FairLend should therefore be understood as a privacy-preserving fairness-auditing architecture and proof-of-concept protocol design rather than a complete bias-mitigation mechanism, a fully end-to-end encrypted credit-scoring system, or a completed production benchmark.
 
 \end{abstract}
 
@@ -177,7 +177,7 @@ To address the tension between protected-attribute privacy and fairness monitori
 
     \item \textbf{Direct encrypted-additive protected-attribute aggregation.} The active protocol encodes gender as a homomorphically encrypted one-hot integer vector and aggregates it directly, by ciphertext addition only, into six encrypted group-and-outcome statistics. This requires no encrypted reference vectors, no ciphertext-ciphertext multiplication, and no relinearisation or rescaling (multiplicative depth zero), and BFV decryption yields the exact integer count with no rounding step. An earlier design revision used an encrypted similarity computation (\textsf{compSim}) against encrypted reference vectors under CKKS; because the reference vectors reduce to selecting the credential's own encoded coordinates, this computation was found to be unnecessary for the aggregation the audit performs and is retained only as a superseded design variant (Section~\ref{subsec:compsim}).
 
-    \item \textbf{Controlled evaluation and prototype assessment.} We define a reproducible proxy-discrimination evaluation protocol using the public LendingClub dataset and a synthetic binary protected attribute correlated with selected non-sensitive proxy variables, and report measured proxy-inference AUC and demographic-parity/equalised-odds sensitivity across ten synthetic-label seeds and five proxy-correlation strengths on the real LendingClub population. We additionally report phase-level computation and communication measurements for the implemented operational and homomorphic-encryption components, and constraint counts and proving/verification times for the implemented $R_{\mathrm{acc}}$ instantiation. A repeated-seed encrypted-fidelity evaluation on the full real-data population under the active BFV protocol is specified but not yet executed, pending availability of the exact raw dataset release used for the other real-data measurements reported here.
+    \item \textbf{Controlled evaluation and prototype assessment.} We define a reproducible proxy-discrimination evaluation protocol using the public LendingClub dataset and a synthetic binary protected attribute correlated with selected non-sensitive proxy variables, and report measured proxy-inference AUC and demographic-parity/equalised-odds sensitivity across ten synthetic-label seeds and five proxy-correlation strengths on the real LendingClub population. We additionally report phase-level computation and communication measurements for the implemented operational and homomorphic-encryption components, and constraint counts and proving/verification times for the implemented $R_{\mathrm{acc}}$ instantiation. Under the active BFV protocol, the encrypted reconstruction was evaluated on the real-data TEST partition for logistic regression over the complete 5-$\alpha_1$ $\times$ 10-seed grid (50 configurations): all 600 aggregate counts matched the plaintext counts exactly, with $e_{\mathrm{DP}}=e_{\mathrm{EO}}=0$ in every run. Random forest was evaluated in the plaintext sensitivity analysis only, not under encryption.
 \end{enumerate}
 
 FairLend jointly addresses protected-attribute confidentiality and fairness auditability within a unified cryptographic architecture. In the current design, gender is not disclosed in plaintext to the Loan Processing Unit (LPU), while encrypted gender representations remain available for aggregate fairness analysis by the Fair Lending Auditor (FLA). This guarantee is deliberately narrower than full end-to-end confidentiality: operational attributes, including account details and credit-score values, may be decrypted by authorised entities where required for loan processing. FairLend therefore protects the protected attribute from direct use by the operational decision-making unit and enables privacy-preserving group-level auditing, rather than hiding every borrower attribute from every protocol entity.
@@ -389,7 +389,7 @@ as the protected attribute retained for encrypted fairness auditing. Fig \ref{FI
 
 	
  \subsection{Network Model}
-The FairLend system, detailed in Figure \ref{FIG:2}, facilitates secure information exchange and interaction among various entities involved in the loan processing lifecycle. This model prioritises privacy-preserving mechanisms for handling gender information while simultaneously enabling the evaluation of gender bias in loan approvals. It starts with the Borrower, who submits a loan application by providing the necessary details and a unique ID. The Identity Provider (IP) authenticates the Borrower's identity, after which the Bank provides them with essential account details for future financial transactions. Next, the Borrower sends their financial details to the CA, which undertakes a comprehensive credit evaluation to determine their creditworthiness and calculate a credit score. With account details, credit score, and homomorphically encrypted gender information, the Borrower sends a loan request to the Loan Processing Unit (LPU). The LPU evaluates each application without receiving gender in plaintext and produces the corresponding approval or rejection decision. It then combines the decision outcome with encrypted gender-similarity values to construct encrypted aggregate statistics for the audit period. The FLA receives only these encrypted aggregate statistics, decrypts the group-level counts, and computes fairness measures such as demographic-parity and equalised-odds gaps. The production protocol does not require the FLA to receive borrower identifiers or per-applicant gender labels.
+The FairLend system, detailed in Figure \ref{FIG:2}, facilitates secure information exchange and interaction among various entities involved in the loan processing lifecycle. This model prioritises privacy-preserving mechanisms for handling gender information while simultaneously enabling the evaluation of gender bias in loan approvals. It starts with the Borrower, who submits a loan application by providing the necessary details and a unique ID. The Identity Provider (IP) authenticates the Borrower's identity, after which the Bank provides them with essential account details for future financial transactions. Next, the Borrower sends their financial details to the CA, which undertakes a comprehensive credit evaluation to determine their creditworthiness and calculate a credit score. With account details, credit score, and homomorphically encrypted gender information, the Borrower sends a loan request to the Loan Processing Unit (LPU). The LPU evaluates each application without receiving gender in plaintext and produces the corresponding approval or rejection decision. It then adds each application's encrypted one-hot gender ciphertext directly into encrypted aggregate statistics, selected by the decision outcome, for the audit period. The FLA receives only these encrypted aggregate statistics, decrypts the group-level counts, and computes fairness measures such as demographic-parity and equalised-odds gaps. The production protocol does not require the FLA to receive borrower identifiers or per-applicant gender labels.
 
  
  \begin{figure}
@@ -419,7 +419,7 @@ directly verifies this signature. Substitution of another ciphertext or
 borrower identifier therefore invalidates the IP signature.
 
 
-\textit{Threat 4: Re-identification by the FLA.} Per-applicant gender-similarity values could allow the FLA to recover individual protected-attribute classes. The production protocol therefore aggregates encrypted group and outcome counts before transmission to the FLA. The FLA decrypts only aggregate sufficient statistics, and audit results are suppressed when group sizes fall below a minimum reporting threshold. 
+\textit{Threat 4: Re-identification by the FLA.} Per-applicant protected-attribute values could allow the FLA to recover individual protected-attribute classes. The production protocol therefore aggregates encrypted group and outcome counts before transmission to the FLA. The FLA decrypts only aggregate sufficient statistics, and audit results are suppressed when group sizes fall below a minimum reporting threshold. 
 
 \textit{Threat 5: LPU--FLA collusion.} An LPU--FLA coalition could combine borrower linkage held by the LPU with decryption capability held by the FLA. The present security guarantee therefore depends on organisational and technical non-collusion. Threshold decryption, secure multi-party aggregation, or independent regulator-operated key custody would be required for stronger collusion resistance. 
 
@@ -1488,7 +1488,7 @@ NIZKPs and directly verifies the Identity Provider's signature on the encrypted 
 
 After verifying an application, the LPU computes the approval or rejection decision from the authenticated credit score. It does not decrypt the protected attribute. Instead, it computes encrypted group-membership values
 and incorporates them into encrypted group, approval, and outcome statistics. Only the completed aggregate sufficient statistics are transmitted to the
-FLA; per-applicant protected-attribute similarities are not disclosed.
+FLA; per-applicant protected-attribute values are not disclosed.
 
 
 
@@ -1764,14 +1764,14 @@ External attacker & Encrypted and hashed protocol messages if communications are
 
 We state this claim conservatively and narrowly: it covers only the confidentiality of the encrypted protected attribute against the LPU, under the stated trust model, and explicitly does not extend to the Identity Provider or to the aggregate statistics the FLA is designed to learn.
 
-\begin{theorem} Assume that the BFV encryption scheme is IND-CPA secure under the underlying Ring-LWE assumption, that the NIZKP system is zero-knowledge and sound, that communication is authenticated, that the Identity Provider is trusted and honest, and that the LPU and FLA do not collude. Then a probabilistic polynomial-time semi-honest LPU cannot distinguish encryptions of the two valid gender encodings with more than negligible advantage, except for information inferable from the explicitly permitted operational attributes and the released aggregate audit outputs.
+\begin{theorem} Assume that the BFV encryption scheme is IND-CPA secure under the underlying Ring-LWE assumption, that the NIZKP system is zero-knowledge and sound, that communication is authenticated, that the Identity Provider is trusted and honest, and that the LPU and FLA do not collude. Then a probabilistic polynomial-time semi-honest LPU that never holds $sk_{HE}$ and never observes decryption outputs cannot distinguish encryptions of the two valid gender encodings with more than negligible advantage, except for information inferable from the explicitly permitted operational attributes and the released aggregate audit outputs.
 \end{theorem}
 
 This theorem does \emph{not} claim: (i) confidentiality of the protected attribute against the Identity Provider, which by construction observes it in plaintext before encryption (Section~\ref{subsec:scope_guarantees}); (ii) that the released aggregate statistics $(C,A,P,TP,N,FP)$ reveal nothing about individual borrowers -- aggregate disclosure to the FLA is an intentional design feature, not a hidden value, and its own re-identification risk (particularly for small groups) is addressed separately by the minimum-cell-size mechanism and discussed as a residual risk below, not by this theorem; or (iii) resistance to LPU--FLA collusion, which is assumed away rather than defended against.
 
 \begin{proof}[Proof sketch]
 
-The LPU's protected-attribute view consists of BFV ciphertexts, application commitments, NIZKP statements, and aggregate protocol metadata; because the active aggregation path performs only ciphertext addition, the LPU requires and receives no relinearisation or Galois evaluation-key material at all (Section~\ref{subsec:init}). By IND-CPA security, the ciphertext encrypting the coordinates of $(1,0)$ is computationally indistinguishable from a freshly generated ciphertext encrypting the coordinates of $(0,1)$ to an entity that does not possess $sk_{HE}$. Because the LPU never decrypts, and never observes a decryption output produced from a protected-attribute ciphertext, this confidentiality claim requires only standard IND-CPA security and not security under a decryption oracle: the LPU's view contains ciphertexts and protocol metadata only. (This is a materially different situation from the FLA's own aggregate-decryption step, discussed in Section~\ref{subsec:composition_limits} and Section~\ref{subsec:ind_cpa_d}.) By the zero-knowledge property, the NIZKPs reveal no information about their witnesses beyond the truth of the verified statements. The commitment and hash values reveal only the application-binding relation under their hiding and pre-image-resistance assumptions. Replacing each protected-attribute ciphertext with an encryption of the alternative valid encoding therefore changes the LPU's view only negligibly. The claim does not cover statistical inference from plaintext proxy attributes, which forms part of the explicitly stated leakage, and it assumes the Identity Provider honestly encrypts the protected attribute it observed rather than a substituted value.
+The LPU's protected-attribute view consists of BFV ciphertexts, application commitments, NIZKP statements, and aggregate protocol metadata; because the active aggregation path performs only ciphertext addition, the LPU requires and receives no relinearisation or Galois evaluation-key material at all (Section~\ref{subsec:init}). By IND-CPA security, the ciphertext encrypting the coordinates of $(1,0)$ is computationally indistinguishable from a freshly generated ciphertext encrypting the coordinates of $(0,1)$ to an entity that does not possess $sk_{HE}$. Because the LPU never decrypts, and never observes a decryption output produced from a protected-attribute ciphertext, this claim needs only standard IND-CPA security for the LPU's view, which contains ciphertexts and protocol metadata only. The theorem does not cover the FLA's aggregate-decryption step, whose repeated decryptions fall outside plain IND-CPA (Section~\ref{subsec:ind_cpa_d}). By the zero-knowledge property, the NIZKPs reveal no information about their witnesses beyond the truth of the verified statements. The commitment and hash values reveal only the application-binding relation under their hiding and pre-image-resistance assumptions. Replacing each protected-attribute ciphertext with an encryption of the alternative valid encoding therefore changes the LPU's view only negligibly. The claim does not cover statistical inference from plaintext proxy attributes, which forms part of the explicitly stated leakage, and it assumes the Identity Provider honestly encrypts the protected attribute it observed rather than a substituted value.
 \end{proof}
 
 \subsection{Credential Integrity and NIZKP Soundness} 
@@ -1782,7 +1782,11 @@ For each application, the LPU verifies the three NIZKPs \[ \Pi_i = \left\{ \pi_{
 \subsection{Composition, Disclosure, and Collusion Limits}
 \label{subsec:composition_limits} FairLend combines public-key encryption for operational data exchange, digital signatures for credential authenticity, commitments and hash functions for application binding, BFV-based homomorphic encryption for protected-attribute aggregation, and NIZKPs for verification of selected application statements. The security guarantees of the composed protocol depend on the assumptions of each component and on the role separation defined in the threat model. The LPU is authorised to decrypt operational account and credit-score information required for loan processing. Consequently, FairLend does not claim that these financial attributes remain confidential from the LPU. The protected-attribute guarantee is narrower, and is relocated rather than absolute: gender is disclosed in plaintext to the trusted Identity Provider, which represents it as an IP-issued BFV ciphertext; the LPU does not possess the corresponding secret key, can evaluate only the permitted encrypted-addition operations, and cannot directly decrypt the individual protected-attribute value. The FLA receives only encrypted aggregate sufficient statistics -- group totals, approval counts, and, where available, group-by-outcome counts -- and this aggregate disclosure is an intentional part of the design, not an incidental leak: the FLA's entire purpose is to learn these six group-level quantities. It does not receive borrower identifiers or any per-record value in the production protocol. After authorised aggregate decryption, the FLA computes demographic parity and equalised odds subject to the minimum reporting-size requirement, which bounds re-identification risk from small released groups but does not eliminate it. FairLend therefore supports aggregate fairness auditing but does not alter the decisions of the underlying credit model or guarantee that those decisions satisfy a particular fairness criterion.
 
-\label{subsec:ind_cpa_d} An earlier design revision of this protocol used CKKS for this same aggregation path. Because CKKS decryption is approximate, an entity that repeatedly observes decryptions of related ciphertexts -- exactly the FLA's role, which decrypts an aggregate ciphertext derived from many applications' encrypted contributions -- requires security under a decryption oracle (IND-CPA$^{D}$, not plain IND-CPA) to rule out information leaking through the pattern of approximation error across repeated decryptions absent explicit noise flooding (smudging) \citep{limicciancio2021approximate}. The active protocol's use of BFV removes this specific concern for the active construction: BFV decryption is exact, so there is no approximation-error side channel for repeated aggregate decryption to expose, and the weaker, standard IND-CPA notion suffices for the whole active pipeline, not only for the LPU-facing confidentiality claim of Theorem~\ref{subsec:confidentiality_theorem}. This does not mean BFV eliminates all information leakage from the released aggregates themselves: the six decrypted group-and-outcome counts are, by design, released to the FLA, and an adversary who additionally controlled or observed the FLA still learns exactly what the aggregate audit is designed to reveal. What the scheme change removes is an \emph{additional}, avoidable attack surface that existed alongside that intentional disclosure, not the disclosure itself.
+\label{subsec:ind_cpa_d} \paragraph{Decryption exposure at the FLA.} Standard IND-CPA security gives the adversary ciphertexts and no decryption results. The FLA, by contrast, holds $sk_{HE}$ and decrypts aggregate ciphertexts derived from many applications' encrypted contributions, and repeated decryption of related ciphertexts is exactly the setting captured by the stronger IND-CPA$^{D}$ notion (security in the presence of decryption results). For approximate schemes such as CKKS this exposure is known to leak secret-key and plaintext information through the decryption error unless noise flooding (smudging) is applied \citep{limicciancio2021approximate}. Moving to BFV removes the approximation-error channel specific to CKKS, but it does \emph{not} make standard IND-CPA sufficient for the FLA's role: IND-CPA$^{D}$ attacks are also known against exact schemes when decryption results depend on ciphertext noise or on adversarially chosen operations. This paper therefore makes no IND-CPA$^{D}$ claim for BFV. The prototype implements no noise flooding, and no smudging parameter is specified.
+
+\paragraph{Scope of Theorem~\ref{subsec:confidentiality_theorem}.} Consequently, Theorem~\ref{subsec:confidentiality_theorem} is scoped to a semi-honest LPU that never holds $sk_{HE}$ and never observes any decryption output, and it explicitly \emph{excludes} security against any party that obtains repeated decryptions of protected-attribute-derived ciphertexts, including the FLA. Protection at the FLA rests on the non-collusion assumption, on the FLA receiving only the six aggregate ciphertexts (no per-record values), and on the minimum-cell-size rule; it is not a cryptographic guarantee under a decryption oracle. What the released aggregates themselves reveal is, by design, exactly the six group-and-outcome counts. A deployment that requires IND-CPA$^{D}$-style protection would need noise flooding with a documented parameterisation (or threshold decryption), which is future work (Section~\ref{subsec:composition_limits}).
+
+\paragraph{Why BFV rather than CKKS, Paillier, or BGV.} The active pipeline encrypts integer one-hot indicators, performs only ciphertext additions, and releases integer counts (multiplicative depth zero). CKKS is unnecessary because approximate arithmetic adds a decryption-error side channel and a rounding step with no benefit for exact counts. Paillier would also suffice functionally for additions, but it encrypts one integer per ciphertext, so the two group counters per statistic would need separate ciphertexts instead of one two-slot SIMD ciphertext, and it offers no path to the ciphertext-ciphertext operations needed by extensions such as multi-attribute or intersectional audits; it is also not lattice-based. BGV is functionally comparable to BFV for this workload; BFV was chosen because it was available and validated in the TenSEAL implementation used throughout, not because a measured comparison showed an advantage over BGV or Paillier, and none is claimed. Measured BFV and CKKS costs are reported in Section~\ref{subsec:empirical_efficiency}; no Paillier or BGV measurements were made.
 
 The confidentiality claim requires non-collusion between the LPU and the FLA. If the LPU and FLA collude, the LPU's borrower linkage and operational records could be combined with the FLA's decryption capability, increasing the risk of individual protected-attribute recovery. Similarly, compromise of the FLA secret key would invalidate the protected-attribute confidentiality guarantee. The present design does not claim resistance to malicious deviations by the LPU or FLA, endpoint compromise, side-channel leakage, denial-of-service attacks, or secret-key theft, and it does not claim confidentiality of the protected attribute against the Identity Provider, which observes it in plaintext by construction. Stronger deployments could use threshold BFV decryption, secure multi-party aggregation, hardware-isolated key custody, independent audit governance, differential privacy for released statistics, and malicious-secure proof systems. These mechanisms are complementary extensions and are outside the current prototype.
 
@@ -1825,7 +1829,9 @@ This section defines the controlled evaluation methodology and reports the phase
 \label{subsec:setup}
 
 \subsubsection{Dataset}
-We use the publicly available LendingClub dataset\footnote{\url{https://www.kaggle.com/datasets/adarshsng/lending-club-loan-data-csv}}, which contains over two million loan records from 2007 to 2015. Each record includes loan status (e.g., Current, Late, Fully Paid), payment history, credit-related variables, financial inquiries, borrower location (ZIP code and state), and collections status. After standard preprocessing (removing incomplete or inconsistent records and consolidating rarely used categories), we obtain approximately 890{,}000 observations with 75 variables.
+We use the publicly available LendingClub dataset\footnote{The public source URL of the exact file analysed is to be confirmed by the authors; the file is identified by name and SHA-256 below.}.
+% AUTHOR CONFIRMATION REQUIRED: source URL of the exact file is not recorded in the repository.
+The frozen experiment uses the file \texttt{accepted\_2007\_to\_2018Q4.csv} (SHA-256 \texttt{3eae03c2\ldots1f36a}), which has $2{,}260{,}701$ raw rows and 151 columns and covers loan issue dates from June 2007 to December 2018; the evaluation retains loans issued in 2007--2015. Each record includes loan status (e.g., Current, Late, Fully Paid), payment history, credit-related variables, financial inquiries, borrower location (ZIP code and state), and collections status. After removing 33 non-data footer rows and $1{,}373{,}228$ loans issued outside 2007--2015, we obtain $887{,}440$ audit-eligible records ($829{,}355$ with a resolved repayment outcome and $58{,}085$ unresolved); the pipeline loads only the eight columns it needs (loan identifier, loan status, annual income, employment length, debt-to-income ratio, home ownership, state, and issue date) from the 151-column file.
 
 
 \paragraph{Synthetic gender label with proxy correlation.}
@@ -1916,7 +1922,7 @@ Here, $\alpha_1=0$ represents a no-proxy-signal control, while increasing values
 
 For every pair $(\alpha_1,s)$, where $s\in\mathcal{S}$, the synthetic labels are regenerated and the complete evaluation is repeated. Preprocessing parameters are estimated from the training partition only. The credit-decision and proxy-inference models are fitted on the training partition, hyperparameters are selected using the validation partition, and all final measurements are computed on the held-out test partition.
 
-We report the mean and standard deviation across the ten seeds for the realised female proportion, proxy-inference AUC, and the plaintext demographic-parity and equalised-odds gaps for both evaluated decision models. These are measured, real-data results (Table~\ref{tab:alpha_seed_sensitivity}), computed on the plaintext audit path; the corresponding encrypted (BFV) reconstruction has been verified exact at the primary configuration ($\alpha_1=0.7$, seed $0$; Section~\ref{subsec:fairness_reconstruction}) but not yet repeated across all ten seeds and five $\alpha_1$ values on the full real-data population (Section~\ref{subsec:blocked_experiment}). The main plaintext-sensitivity conclusions are therefore based on repeated synthetic-label assignments rather than on a single fixed random seed; the encrypted-fidelity claim itself currently rests on the single primary configuration.
+We report the mean and standard deviation across the ten seeds for the realised female proportion, proxy-inference AUC, and the plaintext demographic-parity and equalised-odds gaps for both evaluated decision models. These are measured, real-data results (Table~\ref{tab:alpha_seed_sensitivity}), computed on the plaintext audit path only. Two experiments use this $(\alpha_1,s)$ grid and are kept distinct: the plaintext sensitivity analysis reported here evaluates both logistic regression and random forest, while the BFV encrypted-reconstruction experiment (Section~\ref{subsec:bfv_realdata_fidelity}) evaluates logistic regression only, over the same complete 50-pair grid. Random forest was not evaluated under BFV encryption. The plaintext-sensitivity conclusions are based on repeated synthetic-label assignments rather than on a single fixed seed; the table itself is plaintext and is not evidence about encrypted reconstruction.
 
 This synthetic construction should not be interpreted as representing observed gender or the causal processes producing gender disparities in lending. Its purpose is to provide a controlled and reproducible audit signal that is partially recoverable from non-sensitive proxy variables. The experiment therefore evaluates sensitivity to proxy correlation rather than real-world regulatory fairness.
 
@@ -1940,20 +1946,60 @@ This synthetic construction should not be interpreted as representing observed g
 
 At $\alpha_1=0$ (no proxy signal by construction), proxy AUC is indistinguishable from chance ($0.5005$), confirming the synthetic protected attribute carries no recoverable signal in this control; small non-zero DP/EO values at $\alpha_1=0$ reflect finite-sample variation in a balanced random split rather than a proxy effect. Proxy AUC increases monotonically with $\alpha_1$ by construction (Pearson $r=0.995$ across all 50 configurations), and both models' fairness gaps increase with $\alpha_1$, with the random-forest model showing a consistently larger equalised-odds gap than logistic regression at every proxy-correlation strength tested. Protected-group balance (the realised female proportion) is stable across seeds at every $\alpha_1$ (std $\leq 0.0005$); the fairness metrics themselves are noticeably less stable seed-to-seed at low-to-moderate $\alpha_1$, so a single-seed DP/EO value at weak proxy-signal strength should not be read as a stable per-model constant.
 
-\subsubsection{Encrypted Protected-Attribute Reconstruction Criteria} \label{subsec:matching_criteria} We define the exactness criterion used to evaluate the active BFV direct-additive aggregation path. For each of the six aggregate statistics $S\in\{C,A,P,TP,N,FP\}$ and each protected group $k\in\{m,f\}$, the encrypted-vs-plaintext count-reconstruction error is \[ e(S_k) = \left| S_k^{\mathrm{BFV}} - S_k^{\mathrm{plain}} \right|, \] with no epsilon tolerance: because BFV decryption is exact (Section~\ref{subsec:bfv_parameters}), $e(S_k)=0$ is the expected outcome for every valid application, not merely a value below some acceptable threshold. This replaces the earlier compSim-based matching-fidelity criteria (classification accuracy, macro-F1, unmatched-record rate against a threshold $\delta^{*}$; Section~\ref{subsec:compsim}), which evaluated a similarity computation that is no longer part of the active protocol. At controlled/fixture scale (Section~\ref{subsec:fixture_scale_note}), $e(S_k)=0$ for all 24 (group, statistic) combinations measured, for both evaluated decision models; the corresponding measurement repeated across the full real-data population and all ten seeds is the blocked experiment discussed in Section~\ref{subsec:blocked_experiment}.
+\subsubsection{Encrypted Protected-Attribute Reconstruction Criteria} \label{subsec:matching_criteria} We define the exactness criterion used to evaluate the active BFV direct-additive aggregation path. For each of the six aggregate statistics $S\in\{C,A,P,TP,N,FP\}$ and each protected group $k\in\{m,f\}$, the encrypted-vs-plaintext count-reconstruction error is \[ e(S_k) = \left| S_k^{\mathrm{enc}} - S_k^{\mathrm{plain}} \right|, \qquad S\in\{C,A,P,TP,N,FP\}, \] which is the single definition of aggregate-count reconstruction error used throughout this paper (Section~\ref{subsec:fairness_reconstruction} refers back to it), with no epsilon tolerance: because BFV decryption is exact (Section~\ref{subsec:bfv_parameters}), $e(S_k)=0$ is the expected outcome for every valid application, not merely a value below some acceptable threshold. This replaces the earlier compSim-based matching-fidelity criteria (classification accuracy, macro-F1, unmatched-record rate against a threshold $\delta^{*}$; Section~\ref{subsec:compsim}), which evaluated a similarity computation that is no longer part of the active protocol. At controlled/fixture scale (Section~\ref{subsec:fixture_scale_note}), $e(S_k)=0$ for all 24 (group, statistic) combinations measured, for both evaluated decision models; the corresponding measurement on the full real-data TEST partition, over all 50 $(\alpha_1,s)$ pairs (logistic regression only; Section~\ref{subsec:bfv_realdata_fidelity}), also gives $e(S_k)=0$ for all 600 comparisons.
 
 \subsubsection{Proxy-Discrimination Diagnostic} The synthetic construction is designed to create a protected attribute that is partially associated with selected non-sensitive proxy variables. A logistic-regression classifier trained to predict $g_i$ from only the proxy-feature set, fitted on the training partition and evaluated on the held-out test partition, achieves a measured test AUC of $0.6830\pm0.0010$ (mean $\pm$ std over 10 seeds) at the primary setting $\alpha_1=0.7$, confirming the synthetic protected attribute is partially recoverable from the proxy features by construction. Table~\ref{tab:alpha_seed_sensitivity} reports this diagnostic across all five evaluated $\alpha_1$ values. The purpose of this diagnostic is to validate the controlled data-generation process rather than to model real-world gender inference.
 
-\subsubsection{Sensitivity-Analysis Protocol} \label{subsec:sensitivity_protocol} The primary controlled proxy-discrimination experiment uses \[ \alpha_0=0, \qquad \alpha_1=0.7, \] with the proxy score centred using statistics estimated from the training partition. This setting introduces a moderate statistical relationship between the synthetic protected attribute and the selected non-sensitive proxy features. We repeat the synthetic-label generation and evaluation procedure for \[ \alpha_1\in\{0.0,0.4,0.7,1.0,1.3\} \] and independent sampling seeds \[ \mathcal{S}=\{0,1,\ldots,9\}, \] a total of 50 configurations, on the full real LendingClub population (887{,}440 audit-eligible records; 80.57\,s total runtime for all 50 configurations $\times$ 2 models, plaintext computation only). For each configuration, we report the realised protected-group proportion, proxy-inference AUC, and the plaintext demographic-parity and equalised-odds gaps for both evaluated decision models (Table~\ref{tab:alpha_seed_sensitivity}). This plaintext sensitivity sweep is independent of the protected-attribute encryption scheme: it never constructs a homomorphic ciphertext or issues a credential, so its results hold for the CKKS-direct, BFV-direct, and legacy compSim-based aggregation paths equally. The repeated-seed sensitivity of the \emph{encrypted} reconstruction specifically (as opposed to the plaintext fairness metrics reported here) remains the blocked experiment discussed in Section~\ref{subsec:blocked_experiment}.
+\subsubsection{Sensitivity-Analysis Protocol} \label{subsec:sensitivity_protocol} The primary controlled proxy-discrimination experiment uses \[ \alpha_0=0, \qquad \alpha_1=0.7, \] with the proxy score centred using statistics estimated from the training partition. This setting introduces a moderate statistical relationship between the synthetic protected attribute and the selected non-sensitive proxy features. We repeat the synthetic-label generation and evaluation procedure for \[ \alpha_1\in\{0.0,0.4,0.7,1.0,1.3\} \] and independent sampling seeds \[ \mathcal{S}=\{0,1,\ldots,9\}, \] a total of 50 configurations, on the full real LendingClub population (887{,}440 audit-eligible records; 80.57\,s total runtime for all 50 configurations $\times$ 2 models, plaintext computation only). For each configuration, we report the realised protected-group proportion, proxy-inference AUC, and the plaintext demographic-parity and equalised-odds gaps for both evaluated decision models (Table~\ref{tab:alpha_seed_sensitivity}). This plaintext sensitivity sweep is independent of the protected-attribute encryption scheme: it never constructs a homomorphic ciphertext or issues a credential, so its results hold for the CKKS-direct, BFV-direct, and legacy compSim-based aggregation paths equally. The \emph{encrypted} reconstruction was evaluated over the same 50-pair grid for logistic regression only (Section~\ref{subsec:bfv_realdata_fidelity}); random forest was not evaluated under encryption.
 
-\subsubsection{Evidence Scale and the Blocked Real-Data Encrypted-Fidelity Experiment} \label{subsec:fixture_scale_note}
+\subsubsection{Evidence Scale and the Real-Data BFV Encrypted-Fidelity Experiment} \label{subsec:fixture_scale_note}
 
-The encrypted (BFV) reconstruction claims in this paper rest on evidence at two different scales, which we distinguish explicitly rather than presenting either as a substitute for the other. \emph{Controlled/fixture scale} (referenced elsewhere in this section as ``Section~\ref{subsec:fixture_scale_note}'') means a small, synthetically-sized test population (tens of records) constructed specifically to exercise every code path cheaply and repeatably; results at this scale (e.g., $e(S_k)=0$ for all 24 measured (group, statistic) combinations, Section~\ref{subsec:matching_criteria}) demonstrate mechanical correctness of the BFV aggregation implementation but carry no claim about behaviour at LendingClub scale. \emph{Real-data scale} means the full 887{,}440-record audit-eligible LendingClub population (177{,}489-record TEST partition) used throughout Section~\ref{subsec:setup}'s plaintext sensitivity sweep and the historical CKKS primary-policy evaluation (Section~\ref{subsec:baselines_fairness}).
+The encrypted (BFV) reconstruction claims in this paper rest on evidence at two different scales, which we distinguish explicitly rather than presenting either as a substitute for the other. \emph{Controlled/fixture scale} (referenced elsewhere in this section as ``Section~\ref{subsec:fixture_scale_note}'') means a small, synthetically-sized test population (tens of records) constructed specifically to exercise every code path cheaply and repeatably; results at this scale (e.g., $e(S_k)=0$ for all 24 measured (group, statistic) combinations, Section~\ref{subsec:matching_criteria}) demonstrate mechanical correctness of the BFV aggregation implementation but carry no claim about behaviour at LendingClub scale. \emph{Real-data scale} means the full 887{,}440-record audit-eligible LendingClub population (177{,}489-record TEST partition) used throughout Section~\ref{subsec:setup}'s plaintext sensitivity sweep, the historical CKKS primary-policy evaluation (Section~\ref{subsec:baselines_fairness}), and the 50-configuration BFV encrypted-fidelity experiment reported below.
 
-\label{subsec:blocked_experiment}
-The pre-declared 9-configuration encrypted-fidelity subset ($\alpha_1\in\{0.0,0.7,1.3\}\times\text{seed}\in\{0,5,9\}$, logistic regression, real LendingClub data, BFV-direct aggregation) has \emph{not been executed} as of this manuscript revision. Execution was attempted and stopped, by design, at a mandatory data-provenance pre-flight check: the raw LendingClub CSV expected at the tracked path and SHA-256 (per \texttt{results/metadata/dataset\_manifest.json}) is absent from this environment's \texttt{data/raw/} directory. Per an explicit project constraint, no substitute dataset was downloaded and no configuration was silently altered to route around the missing file; the orchestrator (\texttt{evaluation/run\_bfv\_9config\_encrypted\_fidelity.py}) instead exits with a diagnostic message and a non-zero status before any credential, model, or encryption call is made. Consequently, no BFV-vs-plaintext count comparison, no DP/EO reconstruction figure, and no runtime measurement exists from this specific experiment at real-data scale, and none is fabricated or estimated here to fill the gap.
-% BLOCKED_RESULT: insert 9-config BFV LendingClub encrypted-fidelity result after exact raw dataset is restored
-What does exist at real-data scale, and is reported honestly as such rather than conflated with the blocked BFV experiment, is: (i) the full plaintext demographic-parity/equalised-odds sensitivity sweep across all 50 $(\alpha_1,\text{seed})$ configurations (Table~\ref{tab:alpha_seed_sensitivity}), which is independent of the encryption scheme and therefore unaffected by this blocker; and (ii) a single real-data configuration ($\alpha_1=0.7$, seed $0$, $\tau=0.80$) evaluated end-to-end under the \emph{legacy CKKS+compSim} construction, for both evaluated decision models, reported in Section~\ref{subsec:baselines_fairness}. That single configuration predates the BFV migration and was produced by the historical, unmodified evaluation script; it is not, and is not presented as, evidence for the active BFV-direct construction at real-data scale. Reproducing it under BFV-direct aggregation, across all nine pre-declared configurations, is exactly the blocked experiment this subsection documents. The command to run it, once the raw dataset is restored, is \texttt{evaluation/run\_bfv\_9config\_encrypted\_fidelity.py -\/-raw-csv <path>}.
+\label{subsec:bfv_realdata_fidelity}
+\paragraph{Protocol.} The BFV encrypted-reconstruction experiment was executed under the active BFV-direct construction on the full real-data 177{,}489-record TEST partition (165{,}872 records with a resolved outcome), for \emph{logistic regression only}, over the complete grid specified in Section~\ref{subsec:sensitivity_protocol}: $\alpha_1\in\{0.0,0.4,0.7,1.0,1.3\}$ and seeds $\{0,\ldots,9\}$ for every $\alpha_1$, i.e.\ 50 configurations, each completed exactly once, at $\tau=0.80$ with the validation-balanced-accuracy threshold policy. The frozen decision outputs and split were used; no model was retrained and no scientific setting was changed. Before running, the raw file's SHA-256 was verified against the tracked manifest (\texttt{3eae03c2\ldots1f36a}), and the regenerated cleaned population (887{,}440) and split (621{,}207/88{,}744/177{,}489) reproduced the frozen values. Each configuration encrypts every TEST record's one-hot credential under BFV, aggregates by ciphertext addition only, decrypts the six aggregate ciphertexts, and compares all twelve group-by-statistic counts (six statistics $\times$ two groups) with a plaintext oracle computed from the same decisions and labels. The largest decrypted count in any run is $90{,}126$, against the BFV safe-count bound of $16{,}916{,}480$ (a margin of $95.3\times$; Section~\ref{subsec:bfv_parameters}), and no per-record decryption occurred in any run.
+
+\paragraph{Result.} All $50\times12=600$ aggregate-count comparisons matched the plaintext count exactly ($600/600=100\%$): the maximum and mean absolute count error are both $0$, and $e_{\mathrm{DP}}=e_{\mathrm{EO}}=0$ in every one of the 50 runs. Table~\ref{tab:bfv_realdata_by_alpha} gives the result by $\alpha_1$ ($n=10$ seeds each), with the plaintext gaps, which the BFV gaps equal exactly, as mean $\pm$ sample standard deviation over seeds. Because BFV decryption is exact, a zero error is the expected outcome; the experiment therefore validates exact encrypted reconstruction and record/accounting correctness (no record dropped, double-counted or wrapped), and it is not evidence of any fairness improvement. As an independent cross-check, the 12 plaintext counts of every run equal the counts of the separately produced plaintext sensitivity sweep (Table~\ref{tab:alpha_seed_sensitivity}) with zero difference; the plaintext $\Delta_{\mathrm{DP}}$ and $\Delta_{\mathrm{EO}}$ values agree with the sweep to within $1\times10^{-16}$, a difference arising only from independent floating-point computation of the two plaintext quantities and not from BFV reconstruction. Per-run values are in \texttt{results/evaluation/bfv\_encrypted\_fidelity\_50config\_runs.csv}.
+
+\begin{table*}[htbp]
+\centering
+\caption{Real-data BFV encrypted reconstruction by $\alpha_1$, logistic regression, $\tau=0.80$, 177{,}489-record TEST partition, seeds $0$--$9$ for every $\alpha_1$ ($n=10$). ``Max err'' and ``Mean err'' are the maximum and mean absolute aggregate-count errors; $e_{\mathrm{DP}}$ and $e_{\mathrm{EO}}$ are the largest reconstruction errors over the $n$ runs. Source: \texttt{results/evaluation/bfv\_encrypted\_fidelity\_50config\_by\_alpha1.csv}.}
+\label{tab:bfv_realdata_by_alpha}
+\scriptsize
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$\alpha_1$ & $n$ & Count comparisons & Exact matches & Max err & Mean err & $e_{\mathrm{DP}}$ & $e_{\mathrm{EO}}$ \\
+\hline
+0.0 & 10 & 120 & 120 & 0 & 0 & 0 & 0 \\
+0.4 & 10 & 120 & 120 & 0 & 0 & 0 & 0 \\
+0.7 & 10 & 120 & 120 & 0 & 0 & 0 & 0 \\
+1.0 & 10 & 120 & 120 & 0 & 0 & 0 & 0 \\
+1.3 & 10 & 120 & 120 & 0 & 0 & 0 & 0 \\
+\hline
+\textbf{All} & 50 & 600 & 600 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table}[htbp]
+\centering
+\caption{Plaintext (equal to BFV) $\Delta_{\mathrm{DP}}$ and $\Delta_{\mathrm{EO}}$ of the 50 BFV runs, mean $\pm$ sample standard deviation over $n=10$ seeds. Source: \texttt{bfv\_encrypted\_fidelity\_50config\_by\_alpha1.csv}.}
+\label{tab:bfv_realdata_gaps}
+\scriptsize
+\begin{tabular}{|c|c|c|}
+\hline
+$\alpha_1$ & $\Delta_{\mathrm{DP}}$ & $\Delta_{\mathrm{EO}}$ \\
+\hline
+0.0 & 0.001810 $\pm$ 0.001452 & 0.004815 $\pm$ 0.005459 \\
+0.4 & 0.002224 $\pm$ 0.001642 & 0.006239 $\pm$ 0.004559 \\
+0.7 & 0.002042 $\pm$ 0.001395 & 0.006948 $\pm$ 0.003392 \\
+1.0 & 0.002975 $\pm$ 0.002068 & 0.008808 $\pm$ 0.002539 \\
+1.3 & 0.005822 $\pm$ 0.001983 & 0.011070 $\pm$ 0.001822 \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Scope.} The BFV encrypted-reconstruction experiment evaluates logistic regression only; random forest was evaluated in the plaintext sensitivity analysis (Table~\ref{tab:alpha_seed_sensitivity}) but not under BFV encryption, and no encrypted result is claimed for it. The earlier single real-data configuration under the superseded legacy CKKS+compSim construction (Section~\ref{subsec:baselines_fairness}) is not evidence for the active construction. The result establishes aggregate-count fidelity of the audit path only; it says nothing about the FLA's decryption-exposure security (Section~\ref{subsec:ind_cpa_d}). Reproduce with \texttt{evaluation/run\_bfv\_full\_grid\_encrypted\_fidelity.py -\/-run} followed by \texttt{-\/-aggregate} (outputs under \texttt{results/evaluation/bfv\_*}).
 
 \subsubsection{BFV Parameters} \label{subsec:bfv_parameters}
 
@@ -1994,92 +2040,35 @@ encryption and aggregate computation are implemented using TenSEAL, under BFV
 for the active protocol and, for the superseded comparison constructions
 analysed below, under CKKS.
 
-\paragraph{A superseded, analytical-estimate table.} Table~\ref{tab:serialized_sizes} below is retained from an earlier design revision of this manuscript and describes only the \emph{superseded legacy CKKS construction} (Section~\ref{subsec:compsim}), including its now-removed reference vectors $HE.r_m$/$HE.r_f$ and evaluation-key material $evk_{HE}$, neither of which the active BFV-direct construction uses (Section~\ref{subsec:init}). Its entries are configuration-based, uncompressed \emph{analytical estimates}, not direct measurements, and were computed before the actual serialisation measurements now available. They should not be read as characterising the active protocol. The active protocol's actual, measured application-packet and aggregate-audit-packet sizes, obtained from the real serialised objects the implementation produces (not estimated from ciphertext-size formulas), are reported in Figure~\ref{FIG:4} and Section~\ref{subsec:empirical_efficiency}'s Communication Cost discussion; those are the numbers that should be cited for the active BFV-direct construction. The CKKS key material this legacy table refers to is represented as $pk_{HE}$, $sk_{HE}$, and $evk_{HE}$; the active protocol's BFV key material has no $evk_{HE}$ counterpart, because the active aggregation path performs only ciphertext addition and therefore needs no relinearisation or Galois evaluation keys (Section~\ref{subsec:init}).
-
-Table~\ref{tab:serialized_sizes} provides configuration-based, uncompressed size estimates derived from the CKKS polynomial degree, active modulus levels, ciphertext polynomial count, and assumed public-key representation, \emph{for the superseded legacy construction only}. These values are analytical estimates rather than direct measurements from TenSEAL or Microsoft SEAL serialisation. Actual object sizes may differ because of serialisation metadata, compression, key-switching decomposition, library version, and optional evaluation keys.
-
+\paragraph{Measured serialised sizes.} Table~\ref{tab:serialized_sizes} reports sizes obtained by serialising the real objects the implementation produces, not estimates from ciphertext-size formulas; an earlier configuration-based analytical estimate table has been removed because it described the superseded design and disagreed with these measurements. Sizes are raw serialised bytes, except the credential rows, which use the canonical-JSON wire encoding. The legacy column is the superseded CKKS+compSim construction and the BFV column is the active protocol. Sources: \texttt{results/benchmarks/serialization\_measured.csv}, \texttt{serialization\_bfv\_measured.csv}, \texttt{serialization\_ckks\_direct\_vs\_bfv.csv}, and \texttt{results/nizkp/nizkp\_sizes.json}. The FLA private context is a length only; secret bytes were discarded and never stored.
 
 \begin{table}[htbp]
 \centering
-\caption{Configuration-based estimated sizes of serialised cryptographic
-and protocol objects}
+\caption{Measured serialised sizes of protocol objects (bytes)}
 \label{tab:serialized_sizes}
 \scriptsize
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{lr}
+\begin{tabular}{lrr}
 \hline
-\textbf{Serialised object} &
-\textbf{Estimated size (bytes)} \\
+\textbf{Serialised object} & \textbf{Legacy CKKS} & \textbf{BFV (active)} \\
 \hline
-
-Borrower public encryption key
-&
-$65$ \\
-
-Bank or CA digital-signature verification key
-&
-$65$ \\
-
-Operational account ciphertext
-&
-$\approx 101$ \\
-
-Operational credit-score ciphertext
-&
-$\approx 77$ \\
-
-CKKS protected-attribute ciphertext pair
-&
-$\approx 786{,}560$ \\
-
-CKKS encrypted aggregate ciphertext
-&
-$\approx 262{,}208$ \\
-
-CKKS public key $pk_{HE}$
-&
-$\approx 524{,}352$ \\
-
-CKKS evaluation-key material $evk_{HE}$
-&
-$\approx 1{,}573{,}120$ \\
-
-Complete application packet $\mathcal{A}_i$ excluding NIZKPs
-&
-$\approx 787{,}100$ \\
-
-One NIZKP proof
-&
-Not implemented \\
-
-Complete aggregate audit packet $\mathcal{S}$
-&
-$\approx 3{,}146{,}752$ \\
+Bank account credential (wire) & 238 & 238 \\
+CA score credential (wire) & 226 & 226 \\
+Protected-attribute ciphertext $HE.g_i$ & 331{,}060 & 432{,}458 \\
+Application packet excl.\ NIZKPs (raw) & 331{,}524 & 432{,}922 \\
+LPU public evaluation context & 35{,}291{,}733 & 542{,}011 \\
+FLA private context (length only) & 697{,}484 & 812{,}853 \\
+Complete aggregate audit packet (raw ciphertexts) & 2{,}821{,}330 & 2{,}594{,}751 \\
+Ed25519 verification key & 32 & 32 \\
+$R_{\mathrm{acc}}$ Groth16 proof (JSON) & \multicolumn{2}{c}{805} \\
+$R_{\mathrm{acc}}$ verification key (JSON) & \multicolumn{2}{c}{3{,}475} \\
+$R_{\mathrm{acc}}$ proving key (\texttt{.zkey}) & \multicolumn{2}{c}{3{,}017{,}740} \\
+$R_{\mathrm{score}}$, $R_{\mathrm{bind}}$ proofs & \multicolumn{2}{c}{not implemented} \\
 \hline
 \end{tabular}
 \end{table}
 
-
-The values in Table~\ref{tab:serialized_sizes} are configuration-based uncompressed estimates rather than direct implementation measurements. For the CKKS parameter set with polynomial modulus degree $8192$ and coefficient-modulus bit sizes $[60,40,40,60]$, a fresh ciphertext at the first data level contains two polynomials represented over three active coefficient-modulus primes. Its approximate raw size is therefore
-
-\[
-2\times8192\times3\times8
-=
-393{,}216
-\ \text{bytes}.
-\]
-Because the protected attribute is represented as two independently encrypted one-hot coordinates, its combined estimated size is approximately $786{,}432$ bytes before serialization metadata.
-
-After ciphertext multiplication, relinearisation, and one rescaling operation, the resulting similarity and aggregate ciphertexts contain two polynomials over two active coefficient-modulus primes. Their approximate raw size is
-\[
-2\times8192\times2\times8
-=
-262{,}144
-\ \text{bytes}.
-\]
-The complete retrospective audit packet contains twelve encrypted aggregate statistics, giving an estimated payload of approximately $12\times262{,}208=3{,}146{,}496$ bytes, excluding minor packet-level metadata. Actual sizes depend on the Microsoft SEAL and TenSEAL versions, serialization format, enabled compression mode, key-switching decomposition, and whether Galois keys are included.
-
-
+The legacy audit packet contains twelve ciphertexts (two groups of six) and the BFV audit packet contains six two-slot ciphertexts; both sizes are independent of the number of applications. Sizes reported on the canonical-JSON wire basis differ from the raw-ciphertext basis (for example, the legacy audit packet is 5{,}642{,}620~bytes on the wire, \texttt{results/benchmarks/communication\_summary.csv}); Figure~\ref{FIG:4} uses the raw basis throughout. The application-packet rows here and in Figure~\ref{FIG:4} agree because both are generated from the same result files.
 
 \subsubsection{Data Splitting and Model Selection} The cleaned/audit-eligible LendingClub population (887{,}440 records, closely matching the approximately $890{,}000$ figure originally targeted) is partitioned into $70\%$ training (621{,}207 records), $10\%$ validation (88{,}744 records), and $20\%$ test (177{,}489 records) sets, with a fixed split seed, stratified by the repayment-outcome label. The training partition is used for fitting the plaintext credit-decision and proxy-diagnostic models. The validation partition is reserved for hyperparameter and decision-threshold ($\tau$) selection (and, for the superseded compSim design only, selection of the diagnostic matching threshold $\delta^{*}$; Section~\ref{subsec:compsim}). The held-out test partition is reserved for final evaluation. The same fixed credit-decision outputs are used in the plaintext and encrypted audit paths, for both evaluated decision models. This ensures that any difference between the resulting fairness statistics is attributable to encrypted aggregation rather than to a change in the underlying decision model.
 
@@ -2093,7 +2082,7 @@ Table~\ref{tab:overhead} summarises the analytical computation and communication
 \caption{Analytical computation and communication overhead of FairLend} 
 \label{tab:overhead} \scriptsize \begin{tabular}{|p{2.8cm}|p{6.2cm}|p{5.1cm}|} \hline \textbf{Phase} & \textbf{Computation cost} & \textbf{Communication cost} \\ \hline Initialisation & Encryption-, signature-, HE-, and NIZKP-parameter generation & Public encryption keys, signature-verification keys, BFV public key, and NIZKP parameters (no relinearisation/Galois evaluation-key material and no encrypted reference vectors: the active protocol performs addition only) \\ \hline Account-credential issuance & $n(2T_{\mathrm{enc}}+2T_{\mathrm{dec}} +T_{\mathrm{sig}}+T_{\mathrm{IDV}}+O(T_H))$ & $n$ encrypted identity packets and $n$ encrypted signed account credentials \\ \hline Protected-attribute credential issuance & $n(T_{\mathrm{HE}}+T_{\mathrm{sig}} +T_{\mathrm{enc}}+T_{\mathrm{dec}})$ & $n$ encrypted IP-issued protected-attribute credentials \\ \hline Credit-score credential issuance & $n(2T_{\mathrm{enc}}+2T_{\mathrm{dec}} +T_{\mathrm{sig}}+T_{\mathrm{Score}}+T_{\mathrm{IDV}}+O(T_H))$ & $n$ encrypted financial-information packets and $n$ encrypted signed credit-score credentials \\ \hline Loan application & $n(2T_{\mathrm{enc}}+2T_{\mathrm{Com}} +3T_{\mathrm{NIZK-P}}+O(T_H))$ & $n$ application packets containing two operational ciphertexts, one BFV protected-attribute ciphertext, commitments, one IP signature, and three NIZKPs \\ \hline Secure loan processing and aggregation & \[ n\left( 2T_{\mathrm{dec}} +3T_{\mathrm{NIZK-V}} +T_{\mathrm{SigV}} +O(T_{\mathrm{HAdd}}) \right) \] & A fixed aggregate packet containing at most six BFV ciphertexts for the two-group, six-statistic configuration \\ \hline Fairness audit & $6T_{\mathrm{HD}}+T_{\mathrm{metric}}$ & Permitted aggregate fairness report only \\ \hline \end{tabular} \end{table*}
 
-The aggregate protocol differs from a per-applicant disclosure design. The LPU does not transmit individual male or female similarity lists. Instead, it transmits a fixed set of encrypted aggregate sufficient statistics. Therefore, for a fixed set of protected groups and fairness measures, LPU-to-FLA communication does not increase with the number of records in the batch.
+The aggregate protocol differs from a per-applicant disclosure design. The LPU does not transmit any per-applicant protected-attribute values. Instead, it transmits a fixed set of encrypted aggregate sufficient statistics. Therefore, for a fixed set of protected groups and fairness measures, LPU-to-FLA communication does not increase with the number of records in the batch.
 
 
 \subsection{Empirical Efficiency}
@@ -2133,92 +2122,10 @@ Figure~\ref{FIG:4} reports measured application-packet and aggregate-audit-packe
 
 
 
-\subsection{Encrypted Protected-Attribute Matching Fidelity (Superseded compSim Design)}
+\subsection{Superseded compSim Matching Evaluation (Not Evidence for the Active Protocol)}
 \label{subsec:gender_matching}
 
-This subsection evaluates the numerical fidelity of the \textsf{compSim}-based
-encrypted protected-attribute matching operation defined in
-Section~\ref{subsec:compsim}. That construction is \emph{not} part of the
-active protocol: it has been shown to be functionally degenerate (its output
-is a deterministic function of the plaintext one-hot input alone,
-Section~\ref{subsec:compsim}) and has been superseded first by CKKS-direct
-addition and then by the active BFV-direct construction
-(Section~\ref{subsec:init}, Algorithm~\ref{alg:loan_processing}). The
-methodology below is retained only as historical evaluation context for the
-superseded design and for comparison against the active construction's own,
-different exactness criterion (Section~\ref{subsec:matching_criteria}), which
-readers primarily interested in the active protocol's guarantees should
-consult instead.
-
-For each
-held-out test record, the encrypted one-hot vector $HE.g_i$ is compared with
-the encrypted reference vectors $HE.r_m$ and $HE.r_f$ using
-\textsf{compSim}. The resulting encrypted similarities are decrypted only for
-this diagnostic experiment and compared with the exact plaintext inner
-products.
-
-For valid one-hot vectors, the exact plaintext similarities are either zero
-or one:
-\[
-\langle g_i,r_k\rangle
-\in\{0,1\},
-\qquad
-k\in\{m,f\}.
-\]
-We define the CKKS numerical error as
-\[
-e_{i,k}
-=
-\mathsf{HE.Dec}(sk_{HE},HE.s_{i,k})
--
-\langle g_i,r_k\rangle.
-\]
-
-The predicted protected-attribute group is obtained from the paired decrypted
-similarities:
-\[
-\widehat{G}_i
-=
-\arg\max_{k\in\{m,f\}}
-\mathsf{HE.Dec}(sk_{HE},HE.s_{i,k}).
-\]
-A record is marked as unmatched only when
-\[
-\max_{k\in\{m,f\}}
-\mathsf{HE.Dec}(sk_{HE},HE.s_{i,k})
-<
-\delta^{*},
-\]
-where $\delta^{*}$ is selected once using the validation partition and is then
-fixed for the held-out test evaluation.
-
-Because the two encrypted inner products are evaluated before the diagnostic
-threshold is applied, changing $\delta$ does not alter the CKKS similarity
-computation or its multiplicative depth. We therefore report results only for
-the single validation-selected threshold $\delta^{*}$ rather than presenting threshold-dependent computation times.
-
-
-
-
-Accuracy and macro-F1 measure agreement between the encrypted matching output
-and the original synthetic one-hot protected-attribute label. The unmatched
-rate reports the proportion of records whose maximum decrypted similarity is
-below $\delta^{*}$. The maximum and mean absolute errors measure the numerical
-difference between the decrypted CKKS similarities and their exact plaintext
-counterparts.
-
-The encrypted matching operation is considered correct when the decrypted
-inner products remain sufficiently close to zero or one to preserve the
-plaintext group assignment. Substantial matching errors or strong sensitivity
-to the diagnostic threshold would indicate an encoding, scale-management, or
-implementation problem rather than a predictive-performance trade-off.
-
-This threshold-dependent, approximate-similarity criterion applies only to
-the superseded \textsf{compSim} design. It has no counterpart in the active
-BFV-direct construction, which never computes a similarity score and is
-instead evaluated against the no-tolerance exact-reconstruction criterion of
-Section~\ref{subsec:matching_criteria}.
-
+An earlier design revision evaluated the numerical fidelity of the \textsf{compSim}-based encrypted matching operation (Section~\ref{subsec:compsim}) using CKKS similarity scores, a validation-selected diagnostic threshold $\delta^{*}$, and per-record diagnostic decryption. That construction is not part of the active protocol: it is functionally degenerate (its output is the credential's own coordinate), it is retained only as a measured comparison architecture (Section~\ref{subsec:evaluation_scheme_comparison}), and no result from that evaluation is used to support any claim about the active BFV-direct protocol. The active protocol never computes a similarity score, never applies a matching threshold, and never decrypts a per-record value; it is evaluated against the no-tolerance exact-reconstruction criterion of Section~\ref{subsec:matching_criteria} and the results of Section~\ref{subsec:bfv_realdata_fidelity}.
 
 \subsection{Comparison with Plaintext Baselines and Fairness Metrics}
 \label{subsec:baselines_fairness}
@@ -2268,7 +2175,7 @@ Accordingly, the true-positive rate measures the proportion of borrowers with
 satisfactory repayment outcomes who receive a positive lending decision,
 whereas the false-positive rate measures the proportion of borrowers with adverse repayment outcomes who nevertheless receive a positive lending decision.
 
-Equalised odds is evaluated retrospectively only for records for which realised repayment outcomes are available. In operational lending, repayment outcomes are generally unavailable for rejected applicants because no loan is originated. The present experiment therefore does not resolve the selective-label problem and should be interpreted as an offline evaluation over records with observed outcomes rather than a complete simulation of fairness across the full applicant population.
+Equalised odds is evaluated retrospectively only for records for which realised repayment outcomes are available. On the real TEST partition, $165{,}872$ of $177{,}489$ records ($93.45\%$) have an observed outcome and enter the equalised-odds statistics (Section~\ref{subsec:group_fairness_eval}); the remaining $11{,}617$ appear only in demographic-parity statistics. In operational lending, repayment outcomes are generally unavailable for rejected applicants because no loan is originated. The present experiment therefore does not resolve the selective-label problem and should be interpreted as an offline evaluation over records with observed outcomes rather than a complete simulation of fairness across the full applicant population.
 
 Of the 177{,}489-record real TEST partition, $165{,}872$ records have a resolved repayment outcome and $11{,}617$ do not (\texttt{results/evaluation/split\_summary.json}), so equalised odds is computed over $165{,}872/177{,}489=93.45\%$ of the TEST partition. This coverage fraction is itself a lower bound on the true selective-label problem, not the whole of it: the LendingClub dataset contains only loans LendingClub itself originated (approved and funded), so the audited population never includes applicants LendingClub rejected at origination. The 93.45\% figure describes outcome-resolution within this already-originated population; it does not, and cannot from this data alone, characterise fairness with respect to applicants excluded from the dataset by LendingClub's own historical origination decisions.
 
@@ -2280,7 +2187,7 @@ Counterfactual fairness \cite{kusner2017counterfactual} provides a causal notion
 
 FairLend does not alter the decisions produced by the underlying credit model. The encrypted audit is therefore expected to reconstruct the same demographic-parity and equalised-odds gaps as a plaintext audit performed on the same decisions and protected-attribute labels. Any systematic reduction in an encrypted gap would indicate record filtering, threshold-induced selection, or numerical reconstruction error rather than bias mitigation.
 
-\subsubsection{Fairness-Metric Reconstruction Criteria} \label{subsec:fairness_reconstruction} FairLend does not modify the underlying lending decisions. The encrypted audit should therefore reproduce the fairness metrics calculated from the same decisions and plaintext synthetic protected-attribute labels. A systematic difference between the plaintext and encrypted gaps would indicate numerical error, record exclusion, or an inconsistency in the encrypted aggregation procedure rather than bias mitigation. For demographic parity, the reconstruction error is \[ e_{\mathrm{DP}} = \left| \Delta_{\mathrm{DP}}^{enc} - \Delta_{\mathrm{DP}}^{plain} \right|. \] For equalised odds, the reconstruction error is \[ e_{\mathrm{EO}} = \left| \Delta_{\mathrm{EO}}^{enc} - \Delta_{\mathrm{EO}}^{plain} \right|. \] We additionally define aggregate-count reconstruction errors: \[ e(C_k)=|C_k^{enc}-C_k^{plain}|, \qquad e(A_k)=|A_k^{enc}-A_k^{plain}|, \] \[ e(P_k)=|P_k^{enc}-P_k^{plain}|, \qquad e(TP_k)=|TP_k^{enc}-TP_k^{plain}|, \] \[ e(N_k)=|N_k^{enc}-N_k^{plain}|, \qquad e(FP_k)=|FP_k^{enc}-FP_k^{plain}|. \] The encrypted audit is considered numerically faithful when the decrypted aggregate values round to the corresponding plaintext counts and the resulting fairness-metric errors are exactly zero (for the active BFV construction, Section~\ref{subsec:matching_criteria}) or, for the superseded CKKS-based constructions, negligible relative to the $0.5$ rounding boundary. Measured values against this criterion, at the scales currently available, are reported immediately below.
+\subsubsection{Fairness-Metric Reconstruction Criteria} \label{subsec:fairness_reconstruction} FairLend does not modify the underlying lending decisions. The encrypted audit should therefore reproduce the fairness metrics calculated from the same decisions and plaintext synthetic protected-attribute labels. A systematic difference between the plaintext and encrypted gaps would indicate numerical error, record exclusion, or an inconsistency in the encrypted aggregation procedure rather than bias mitigation. For demographic parity, the reconstruction error is \[ e_{\mathrm{DP}} = \left| \Delta_{\mathrm{DP}}^{enc} - \Delta_{\mathrm{DP}}^{plain} \right|. \] For equalised odds, the reconstruction error is \[ e_{\mathrm{EO}} = \left| \Delta_{\mathrm{EO}}^{enc} - \Delta_{\mathrm{EO}}^{plain} \right|. \] Aggregate-count reconstruction errors $e(S_k)$ are as defined in Section~\ref{subsec:matching_criteria} and are not redefined here. The encrypted audit is considered numerically faithful when the decrypted aggregate values round to the corresponding plaintext counts and the resulting fairness-metric errors are exactly zero (for the active BFV construction, Section~\ref{subsec:matching_criteria}) or, for the superseded CKKS-based constructions, negligible relative to the $0.5$ rounding boundary. Measured values against this criterion, at the scales currently available, are reported immediately below.
 
 
 These results demonstrate fidelity of the auditing layer rather than fairness improvement. FairLend does not alter the underlying decisions; therefore, the encrypted demographic-parity and equalised-odds gaps are expected to match their plaintext counterparts.
@@ -2300,11 +2207,9 @@ rounded aggregate count exactly matched its plaintext counterpart, and the
 resulting demographic-parity and equalised-odds reconstruction errors were
 exactly $e_{\mathrm{DP}}=e_{\mathrm{EO}}=0.0$ for both models at this
 configuration. This is a single-configuration, legacy-CKKS-architecture
-result, not a claim about the active BFV-direct construction at real-data
-scale, which remains the blocked experiment (Section~\ref{subsec:blocked_experiment}); it is, however, consistent with the exact ($e(S_k)=0$)
-BFV reconstruction already measured at fixture scale (Section~\ref{subsec:matching_criteria}).
+result, not a claim about the active BFV-direct construction; the active construction's real-data result is reported separately (Section~\ref{subsec:bfv_realdata_fidelity}) and is consistent with it.
 
-\subsubsection{Runtime and Practical Considerations} The phase-level timings reported in Figures~\ref{FIG:3} and~\ref{FIG:4} cover the operational processing and protected-attribute aggregation components implemented in the prototype, across the three labelled architectures (Section~\ref{subsec:evaluation_scheme_comparison}), at batch sizes up to $1000$ applications. They exclude $R_{\mathrm{acc}}$'s concrete NIZKP setup, proving, proof serialisation, transmission, and verification (reported separately, Table~\ref{tab:nizkp_status}), as well as production network and key-management overhead. Separately, the single real-data primary-policy configuration reported above (legacy CKKS+compSim, $\tau=0.80$, full 177{,}489-record TEST population) required $5273.0$\,s ($\approx$88\,min, $33.7$ records/s) end-to-end for logistic regression and $5641.3$\,s ($\approx$94\,min, $31.5$ records/s) for random forest (\texttt{results/evaluation/primary\_policy\_results.csv}); no equivalent real-data-scale runtime measurement exists yet for the active BFV-direct construction, for the same reason given in Section~\ref{subsec:blocked_experiment}. The reported values must therefore not be interpreted as complete end-to-end latency for the full formal FairLend protocol.
+\subsubsection{Runtime and Practical Considerations} The phase-level timings reported in Figures~\ref{FIG:3} and~\ref{FIG:4} cover the operational processing and protected-attribute aggregation components implemented in the prototype, across the three labelled architectures (Section~\ref{subsec:evaluation_scheme_comparison}), at batch sizes up to $1000$ applications. They exclude $R_{\mathrm{acc}}$'s concrete NIZKP setup, proving, proof serialisation, transmission, and verification (reported separately, Table~\ref{tab:nizkp_status}), as well as production network and key-management overhead. Separately, the single real-data primary-policy configuration reported above (legacy CKKS+compSim, $\tau=0.80$, full 177{,}489-record TEST population) required $5273.0$\,s ($\approx$88\,min, $33.7$ records/s) end-to-end for logistic regression and $5641.3$\,s ($\approx$94\,min, $31.5$ records/s) for random forest (\texttt{results/evaluation/primary\_policy\_results.csv}); the active BFV-direct construction's 50 real-data configurations (Section~\ref{subsec:bfv_realdata_fidelity}) took $2{,}147$--$9{,}717$\,s each (mean $7{,}497$\,s, $\approx$18--83 records/s) for the 177{,}489-record TEST partition. These are wall-clock times that were not controlled for machine load: the first nine configurations ran one at a time, and the remaining 41 ran as three concurrent processes on one machine, so they are indicative only (\texttt{results/evaluation/bfv\_encrypted\_fidelity\_50config\_runs.csv}). The reported values must therefore not be interpreted as complete end-to-end latency for the full formal FairLend protocol.
 
 
 \subsection{Comparison with Existing Privacy-Preserving Credit-Scoring Frameworks} \label{subsec:comparative_ppcs} Table~\ref{tab:privacy_comparison} compares FairLend with representative privacy-preserving credit-scoring frameworks. Because the cited systems evaluate different tasks, datasets, hardware platforms, and cryptographic primitives, their published values are provided as cross-study context rather than as a controlled performance ranking. The controlled performance comparison for FairLend is the comparison between plaintext and encrypted auditing on identical records, decisions, software, and hardware. 
@@ -2447,20 +2352,20 @@ Sixth, the security analysis assumes semi-honest, non-colluding entities. The pr
 
 Seventh, of the three NIZKP relations the formal protocol specifies, only $R_{\mathrm{acc}}$ has a concrete instantiation, evaluated with a real Groth16 circuit, prover, and verifier (Table~\ref{tab:nizkp_status}); $R_{\mathrm{score}}$ and $R_{\mathrm{bind}}$ remain formalised only, with no implemented \textsf{Setup}/\textsf{Prove}/\textsf{Verify}, so Algorithm~\ref{alg:loan_processing}'s integrity guard (Section~\ref{subsec:init}) cannot yet be evaluated end-to-end for all three proofs together. The $R_{\mathrm{acc}}$ Groth16 instantiation itself uses a single-party, locally generated Powers-of-Tau and circuit-specific setup (Section~\ref{subsec:nizkp_formal}); this is appropriate for an experimental evaluation of constraint counts and proving/verification cost but is not a production-grade, multi-party trusted setup, and no claim of production readiness is made for it. The EdDSA-Poseidon signature and Poseidon-hash commitment used in this instantiation are circuit-efficient substitutes for the manuscript's unspecified generic $\mathsf{Sign}$ and $\mathsf{Com}$ primitives (Section~\ref{subsec:nizkp_formal}), not a claim that a specific, previously unimplemented signature scheme was implemented unchanged.
 
-Eighth, the real-data (177{,}489-record LendingClub TEST population) encrypted-fidelity evidence available in this manuscript was produced under the superseded legacy CKKS+compSim construction, not the active BFV-direct construction (Section~\ref{subsec:fixture_scale_note}). The pre-declared nine-configuration real-data BFV encrypted-fidelity experiment is blocked on the absence of the raw LendingClub CSV in the evaluation environment and has not been executed; the active construction's exact-reconstruction property ($e(S_k)=0$, Section~\ref{subsec:matching_criteria}) is therefore currently demonstrated only at controlled/fixture scale, not at real-data scale. The experimental results in this paper establish the performance of the implemented operational, BFV-direct, and comparison (CKKS-direct, legacy CKKS+compSim) audit components at the scales actually measured, not the complete end-to-end performance of the full formal protocol at real-data scale under the active construction.
+Eighth, the real-data BFV encrypted-reconstruction experiment covers logistic regression only: random forest was evaluated in the plaintext sensitivity analysis but not under BFV encryption (Section~\ref{subsec:bfv_realdata_fidelity}). The single earlier real-data configuration under the superseded legacy CKKS+compSim construction is not evidence for the active construction. The experiments establish aggregate-count fidelity and the measured cost of the audit path, not the complete end-to-end performance of the full formal protocol.
 
 \section{Conclusion and Future Work} 
 
 This paper presented FairLend, a privacy-preserving protected-attribute auditing framework for loan-processing systems. FairLend separates operational loan processing from independent fairness auditing. The LPU receives the operational information needed to evaluate an application but does not receive gender in plaintext. BFV-encrypted one-hot protected attributes are combined homomorphically, by ciphertext addition alone, with loan-decision and realised-outcome indicators to produce aggregate audit statistics for the FLA (Section~\ref{subsec:init}); an earlier CKKS-based design that additionally computed an encrypted similarity score is retained only for comparison, having been shown to be functionally degenerate (Section~\ref{subsec:compsim}). The contribution is an auditing layer rather than a new credit-risk classifier or an automatic fairness-mitigation method. FairLend preserves the information required to measure demographic-parity and equalised-odds gaps while preventing direct plaintext gender access by the LPU. The encrypted audit should reproduce the fairness metrics of the unchanged underlying decisions; it is not expected to reduce those gaps independently.
 
-The LendingClub-based study defines a controlled proof-of-concept evaluation setting. Because the dataset contains no observed gender field, a synthetic binary protected attribute correlated with selected proxy features is used to specify how proxy signal, encrypted aggregation, and fairness reconstruction should be evaluated. The current prototype reports phase-level timings across three labelled aggregation architectures, a real-data plaintext sensitivity sweep over 50 configurations (Table~\ref{tab:alpha_seed_sensitivity}), exact BFV reconstruction at controlled/fixture scale, and a concrete, benchmarked Groth16 instantiation of $R_{\mathrm{acc}}$ (Table~\ref{tab:nizkp_status}). It does not yet include the real-data, LendingClub-scale BFV encrypted-fidelity measurement, which remains blocked on raw-dataset availability (Section~\ref{subsec:blocked_experiment}), or concrete instantiations of $R_{\mathrm{score}}$ and $R_{\mathrm{bind}}$. Future work will complete the blocked real-data BFV experiment once the raw dataset is restored, instantiate and benchmark the two remaining NIZKP relations, and evaluate FairLend using appropriately governed data containing observed protected attributes. Further extensions will support non-binary and intersectional auditing, threshold decryption, collusion-resistant aggregation, and integration with explicit fairness-mitigation methods.
+The LendingClub-based study defines a controlled proof-of-concept evaluation setting. Because the dataset contains no observed gender field, a synthetic binary protected attribute correlated with selected proxy features is used to specify how proxy signal, encrypted aggregation, and fairness reconstruction should be evaluated. The current prototype reports phase-level timings across three labelled aggregation architectures, a real-data plaintext sensitivity sweep over 50 configurations (Table~\ref{tab:alpha_seed_sensitivity}), exact BFV reconstruction at fixture scale and on the real-data TEST partition over the complete 50-configuration logistic-regression grid (600/600 counts exact; Section~\ref{subsec:bfv_realdata_fidelity}), and a concrete, benchmarked Groth16 instantiation of $R_{\mathrm{acc}}$ (Table~\ref{tab:nizkp_status}). It does not include BFV encrypted evaluation of random forest, or concrete instantiations of $R_{\mathrm{score}}$ and $R_{\mathrm{bind}}$. Future work will extend the BFV encrypted evaluation to random forest, instantiate and benchmark the two remaining NIZKP relations, and evaluate FairLend using appropriately governed data containing observed protected attributes. Further extensions will support non-binary and intersectional auditing, threshold decryption, collusion-resistant aggregation, and integration with explicit fairness-mitigation methods.
 
 \color{black}
 
 
 
 \section*{Data availability statement}
-The analysis in this study is based on the publicly available LendingClub loan dataset, which can be accessed via Kaggle (LendingClub Loan Data, 2007--2015). No proprietary or confidential borrower dataset was generated or analysed in this work. The preprocessing rules, synthetic protected-attribute generation procedure, cryptographic configuration, threshold-selection procedure, and evaluation scripts are available from the corresponding author upon reasonable request. The manuscript reports the main configuration details required for reproduction, including the dataset split, active BFV parameters (Section~\ref{subsec:bfv_parameters}), the operating decision threshold, and evaluation metrics.
+The analysis in this study is based on the publicly available LendingClub loan dataset, which can be accessed via Kaggle (LendingClub accepted-loan file \texttt{accepted\_2007\_to\_2018Q4.csv}, SHA-256 \texttt{3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a}, restricted to loans issued in 2007--2015; the original public source URL is to be confirmed by the authors). No proprietary or confidential borrower dataset was generated or analysed in this work. The preprocessing rules, synthetic protected-attribute generation procedure, cryptographic configuration, threshold-selection procedure, and evaluation scripts are available from the corresponding author upon reasonable request. The manuscript reports the main configuration details required for reproduction, including the dataset split, active BFV parameters (Section~\ref{subsec:bfv_parameters}), the operating decision threshold, and evaluation metrics.
 
 \section*{CRediT author statement}
 \textbf{Mahender Kumar}: Conceptualisation, Methodology, Formal analysis, Software, Investigation, Data curation, Visualisation, Writing – Original Draft.
