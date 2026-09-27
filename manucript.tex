@@ -709,7 +709,7 @@ $\mathbb{I}[\cdot]$
 
 
 
-\color{red}
+{\color{red}
 
 
 \subsection{Formal NIZKP Statements}
@@ -1136,7 +1136,7 @@ $R_{\mathrm{bind}}$ & Account, score, and protected-attribute components bind to
 \hline
 \end{tabular}
 \end{table*}
-
+}
 
 \subsection{Initialisation}
 \label{subsec:init}
@@ -1473,7 +1473,13 @@ The account and score commitments are used in the account-validity and score-aut
 
 
 \subsection{Secure Loan Processing}
-\color{red}
+% [colour-scope audit, formatting-only] \color{red} removed here: this reasserted red into content
+% (Secure Loan Processing/Algorithm 6, the compSim design, Secure Gender-Fairness Analysis) that is not
+% among the additions Reviewer #2 credits as new ("narrowed claims, the Scope of Privacy and Fairness
+% Guarantees subsection, the leakage profile, the collusion discussion and the formalised NIZKP
+% relations") and that Reviewer #2's own comment 1 confirms was already present (and is now being
+% criticised) in the version under review -- i.e. not new in the round this highlighting marks.
+% See manuscript_colour_scope_audit.md for the full reasoning and how to revert this if incorrect.
 
 Algorithm~\ref{alg:loan_processing} describes secure loan processing and encrypted fairness-audit aggregation. The LPU is authorised to decrypt the
 operational account and credit-score values required for the lending decision.
@@ -1698,11 +1704,11 @@ $\Delta_{\mathrm{DP}}$ and, when outcomes are available, $\Delta_{\mathrm{EO}}$
     \State Suppress the equalised-odds report
 \EndIf 
     \State Release only permitted aggregate audit results 
-\end{algorithmic} 
+\end{algorithmic}
 \end{algorithm}
 
 
-\color{red}
+{\color{red}
 
 \section{Security Analysis}
 \label{sec:security}
@@ -1809,7 +1815,7 @@ Released audit groups are sufficiently large & Reduces re-identification risk in
 
 Overall, FairLend provides a narrowly defined protected-attribute confidentiality guarantee under the stated mixed adversarial model. The LPU retains access to authorised operational attributes, the FLA receives only aggregate audit statistics, and the protocol does not provide collusion resistance or fully malicious security. These boundaries are reflected in the experimental evaluation and limitations discussed in the following sections.
 
-\color{black}
+}
 
 \section{Evaluation Design and Analytical Assessment}
 \label{sec:experiments}
