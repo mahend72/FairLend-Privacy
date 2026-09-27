@@ -48,6 +48,8 @@ This regenerates the frozen split/predictions if needed and executes all 9 confi
 
 **What closes it.** Compile `manucript.tex` in the authors' own LaTeX environment (e.g. Overleaf, using the `cas-dc` class this document already assumes) with the actual `.bib` file supplied, and specifically check: final page count (the reviewer's original "Page 26 of 25" comment), whether Algorithm 6 (`alg:loan_processing`) renders without truncation given its length, and whether the new TikZ Figure 1 and the two regenerated PNG figures (`figures/Computation-cost.png`, `figures/communication-cost.png`) place, scale, and caption correctly at print size.
 
+**Also found during this final audit pass (new item, same "needs a compile to see" category):** the document has an unbalanced `\color{red}`/`\color{black}` pattern (5 red calls vs. 4 black calls; predates this revision). Because `\color` is not brace-scoped, this currently colors essentially the entire span from the Formal NIZKP Statements subsection through the start of Security Analysis (roughly 1,100 lines) red in the rendered PDF. This was not introduced by Phase 4A and was not something the brace/label consistency checks in this session could catch, since `\color` doesn't open a delimited scope. It must be resolved (remove the leftover highlighting, or correct it to mark only the intended spans) before the final PDF is produced.
+
 ---
 
 ## Summary table
