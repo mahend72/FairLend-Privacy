@@ -7,11 +7,7 @@ Privacy-preserving protected-attribute fairness auditing for loan-processing sys
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENCE.txt)
 [![GHCR](https://img.shields.io/badge/GHCR-v0.1.0-blue?logo=docker)](https://github.com/users/mahend72/packages/container/package/fairlend-privacy)
 
-FairLend audits an *already-made* set of loan-approval decisions for disparity between two protected groups, without ever giving the entity that made those decisions plaintext access to group membership. A borrower's protected attribute is issued as a signed, CKKS-encrypted credential; the Loan Processing Unit (LPU) computes an encrypted group-similarity score against that credential and homomorphically accumulates per-group approval/outcome statistics, never decrypting
-anything itself. A separate Fair Lending Auditor (FLA) — the only party
-holding the CKKS secret key — receives nothing but the final aggregate
-statistics and computes demographic-parity (DP) and equalised-odds (EO)
-gaps from them.
+FairLend audits an *already-made* set of loan-approval decisions for disparity between two protected groups, without ever giving the entity that made those decisions plaintext access to group membership. A borrower's protected attribute is issued as a signed, CKKS-encrypted credential; the Loan Processing Unit (LPU) computes an encrypted group-similarity score against that credential and homomorphically accumulates per-group approval/outcome statistics, never decrypting anything itself. A separate Fair Lending Auditor (FLA) — the only party holding the CKKS secret key — receives nothing but the final aggregate statistics and computes demographic-parity (DP) and equalised-odds (EO) gaps from them.
 
 FairLend does not itself decide, approve, or alter any loan application —
 it is an audit layer over decisions a credit-decision model has already
