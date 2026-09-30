@@ -1,0 +1,125 @@
+{
+  "all_rounded_counts_match_plaintext": true,
+  "alpha1": 0.7,
+  "any_per_record_decryption_occurred": false,
+  "bfv_config": {
+    "coeff_mod_bit_sizes": [],
+    "max_safe_count": 16916480,
+    "plain_modulus": 33832961,
+    "poly_modulus_degree": 8192
+  },
+  "bfv_safe_bound": 16916480,
+  "bfv_safety_factor": 95.31001921245824,
+  "data_scope": "real_lendingclub",
+  "dataset_sha256": "3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a",
+  "eo_coverage_fraction": 0.934548056499276,
+  "git_commit": "1cdd61a57dca1d208e8b5b75884995ff864be807",
+  "git_dirty": true,
+  "is_real_lendingclub": true,
+  "lpu_ever_held_secret_key": false,
+  "max_absolute_error": 0.0,
+  "mean_absolute_error": 0.0,
+  "model": "logistic_regression",
+  "packet_protocol_version": "fairlend/encrypted-audit-bfv-direct/v1",
+  "packet_sha256": "c82c8e7cf6ab4561af44a576dcdf59e00004a6d4bc58351c179ef6ab65a03e4a",
+  "records_per_second": 22.691875357106433,
+  "resolved_test_n": 165872,
+  "run_id": "37daaa8e0ce64d1facb4435d8431bdd5",
+  "run_timestamp_utc": "2026-09-30T21:44:39.975952+00:00",
+  "runtime_seconds": 7821.698172003031,
+  "scheme": "bfv",
+  "statistics": {
+    "A_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 59134,
+      "raw_decrypted_count": 59134.0,
+      "rounded_encrypted_count": 59134
+    },
+    "A_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 57864,
+      "raw_decrypted_count": 57864.0,
+      "rounded_encrypted_count": 57864
+    },
+    "C_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 89526,
+      "raw_decrypted_count": 89526.0,
+      "rounded_encrypted_count": 89526
+    },
+    "C_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 87963,
+      "raw_decrypted_count": 87963.0,
+      "rounded_encrypted_count": 87963
+    },
+    "FP_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 8622,
+      "raw_decrypted_count": 8622.0,
+      "rounded_encrypted_count": 8622
+    },
+    "FP_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 8626,
+      "raw_decrypted_count": 8626.0,
+      "rounded_encrypted_count": 8626
+    },
+    "N_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 15292,
+      "raw_decrypted_count": 15292.0,
+      "rounded_encrypted_count": 15292
+    },
+    "N_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 15321,
+      "raw_decrypted_count": 15321.0,
+      "rounded_encrypted_count": 15321
+    },
+    "P_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 67896,
+      "raw_decrypted_count": 67896.0,
+      "rounded_encrypted_count": 67896
+    },
+    "P_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 67363,
+      "raw_decrypted_count": 67363.0,
+      "rounded_encrypted_count": 67363
+    },
+    "TP_f": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 46696,
+      "raw_decrypted_count": 46696.0,
+      "rounded_encrypted_count": 46696
+    },
+    "TP_m": {
+      "absolute_error": 0.0,
+      "matches_plaintext": true,
+      "plaintext_count": 45976,
+      "raw_decrypted_count": 45976.0,
+      "rounded_encrypted_count": 45976
+    }
+  },
+  "status": "completed",
+  "synthetic_seed": 1,
+  "tau": 0.8,
+  "test_approval_count": 116998,
+  "test_approval_rate": 0.6591845128430495,
+  "test_population_n": 177489,
+  "threshold_policy": "validation_balanced_accuracy_max",
+  "unresolved_test_n": 11617
+}

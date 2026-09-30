@@ -1,0 +1,10 @@
+{
+  "alpha0": 0.0,
+  "alpha1": 1.0,
+  "data_scope": "real_lendingclub",
+  "female_fraction": 0.5055992517804021,
+  "is_real_lendingclub": true,
+  "n_records": 887440,
+  "output_path": "results/evaluation/bfv_synthetic_gender_alpha1_1.0_seed_1.parquet",
+  "seed": 1
+}

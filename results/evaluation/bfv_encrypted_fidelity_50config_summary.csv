@@ -1,0 +1,2 @@
+n_configurations,n_count_comparisons,n_exact_matches,exact_match_percent,max_absolute_count_error,mean_absolute_count_error,max_e_DP,max_e_EO,max_abs_diff_vs_plaintext_sweep_DP,max_abs_diff_vs_plaintext_sweep_EO,dataset_sha256
+50,600,600,100.0,0.0,0.0,0.0,0.0,9.8879238130678e-17,9.627715291671279e-17,3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a

@@ -4,19 +4,9 @@ Scope: everything that is still open after the Phase 4A manuscript revision, why
 
 ---
 
-## 1. Real-data BFV encrypted-fidelity 9-configuration experiment (blocked on data availability)
+## 1. Real-data BFV encrypted reconstruction: CLOSED
 
-**What's missing.** The pre-declared subset ($\alpha_1\in\{0.0,0.7,1.3\}\times\text{seed}\in\{0,5,9\}$, logistic regression, full LendingClub-scale population, active BFV-direct construction) has never been executed. 0 of 9 configurations have a result.
-
-**Why it's blocked.** `data/raw/` contains no LendingClub CSV in this environment (only `.gitkeep`). The tracked manifest (`results/metadata/dataset_manifest.json`) expects the file at `data/raw/accepted_2007_to_2018Q4.csv` with SHA-256 `3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a`. This repository's own `data/README.md` already documented this gap before Phase 3A; Phase 3A independently re-confirmed it by direct filesystem inspection and a real (non-mocked) invocation of the orchestrator, which exits with status 3 and a diagnostic message before touching any credential, model, or encryption call.
-
-**What closes it.** Obtain the exact dataset described in `data/README.md`, place it at the expected path, then run:
-```
-evaluation/run_bfv_9config_encrypted_fidelity.py --raw-csv <path-to-the-real-file>
-```
-This regenerates the frozen split/predictions if needed and executes all 9 configurations under the active BFV-direct construction, producing a real DP/BFV, EO/BFV, and per-count reconstruction-error table directly comparable to the already-committed plaintext columns (`results/evaluation/alpha1_seed_sensitivity_runs.csv`). The manuscript marks the exact insertion point with a LaTeX comment (`% BLOCKED_RESULT: insert 9-config BFV LendingClub encrypted-fidelity result after exact raw dataset is restored`, in `subsec:blocked_experiment`).
-
-**What is NOT blocked, and already substitutes as far as it honestly can.** The real 177,489-record TEST population has one existing real-data configuration ($\alpha_1=0.7$, seed 0, $\tau=0.80$) evaluated end-to-end under the *superseded legacy CKKS+compSim* construction, reported in Section `subsec:group_fairness_eval`/`subsec:fairness_reconstruction`, with exact reconstruction ($e_{\mathrm{DP}}=e_{\mathrm{EO}}=0.0$). This is real evidence, clearly labelled as belonging to the superseded architecture, not presented as BFV evidence.
+Completed over the full 5 alpha1 x 10 seed grid (logistic regression): 50/50 configurations, 600/600 counts exact, e_DP = e_EO = 0. See `results/evaluation/bfv_encrypted_fidelity_50config_*` and manuscript `subsec:bfv_realdata_fidelity`. Random forest was not evaluated under BFV.
 
 ---
 
@@ -56,7 +46,7 @@ This regenerates the frozen split/predictions if needed and executes all 9 confi
 
 | # | Blocker | Kind | Unblocks with |
 |---|---|---|---|
-| 1 | Real-data BFV 9-config encrypted-fidelity experiment | Missing external data | Raw LendingClub CSV placed at `data/raw/accepted_2007_to_2018Q4.csv`, then `evaluation/run_bfv_9config_encrypted_fidelity.py --raw-csv <path>` |
+| 1 | Real-data BFV encrypted reconstruction (50 configs, LR) | CLOSED | Raw LendingClub CSV placed at `data/raw/accepted_2007_to_2018Q4.csv`, then `evaluation/run_bfv_9config_encrypted_fidelity.py --raw-csv <path>` |
 | 2 | $R_{\mathrm{score}}$/$R_{\mathrm{bind}}$ concrete instantiation | Missing implementation | New circuits + `groth16_toolchain.py` reuse + `run_nizkp_benchmarks.py` re-run |
 | 3 | Funding statement vs. title-footnote mismatch | Author-only fact | Author confirms correct funder(s) |
 | 4 | LaTeX compilation / pagination / bibliography | Missing tooling + missing `.bib` | Compile on Overleaf/local TeX Live with the real `.bib` file |
