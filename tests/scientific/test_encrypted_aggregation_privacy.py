@@ -1,7 +1,15 @@
-"""Privacy invariant tests for the encrypted audit packet (task Sec.
-7/10): exhaustive field-level proof that EncryptedAuditPacket contains no
-borrower-level data, plus the LPU-side execution/decrypt-boundary checks
-from Sec. 10.
+"""LEGACY (Phase 5, compSim-based) privacy invariant tests for the
+encrypted audit packet (task Sec. 7/10): exhaustive field-level proof
+that LegacyEncryptedAuditPacket contains no borrower-level data, plus the
+LPU-side execution/decrypt-boundary checks from Sec. 10.
+
+PHASE 1 STATUS: as of the Phase 1 compSim-removal change
+(reviewer2_phase1_compsim_removal_report.md), this file exercises the
+LEGACY compSim-based packet/aggregation path exclusively (imported below
+under its explicit ``_legacy_compsim``/``Legacy*`` names). The equivalent
+privacy proof for the active production (direct-addition) packet is in
+``tests/scientific/test_encrypted_aggregation_direct.py``. Nothing in
+this file's expected results was changed to accommodate Phase 1.
 
 Uses the same hermetic pipeline as test_encrypted_aggregation.py.
 """
@@ -15,10 +23,10 @@ import tenseal as ts
 
 from fairlend.audit import aggregation as aggregation_module
 from fairlend.audit.aggregation import (
-    EncryptedAuditPacket,
-    SerializedGroupAuditCounts,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
+    LegacyEncryptedAuditPacket as EncryptedAuditPacket,
+    LegacySerializedGroupAuditCounts as SerializedGroupAuditCounts,
+    build_encrypted_aggregate_packet_legacy_compsim as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_legacy_compsim as compute_encrypted_audit,
 )
 from fairlend.crypto.ckks import context_can_decrypt
 
@@ -134,15 +142,17 @@ def test_1_lpu_has_no_sk_he_throughout_aggregation(pipeline):
 
 def test_2_aggregation_module_never_calls_decrypt_outside_diagnostic_function():
     source = inspect.getsource(aggregation_module)
-    # The ONLY legitimate ".decrypt(" call in this module must be inside
-    # decrypt_audit_packet_for_diagnostics / _decrypt_group (its helper).
+    # The ONLY legitimate ".decrypt(" calls in this module must be inside
+    # the diagnostic decrypt functions (legacy and Phase 1) / their helpers.
     lines_with_decrypt = [line for line in source.splitlines() if ".decrypt(" in line]
     assert len(lines_with_decrypt) >= 1  # the diagnostic path itself must exist
-    # Structural check: compute_encrypted_audit's and
-    # build_encrypted_aggregate_packet's own source (not the whole module)
-    # contain no decrypt call.
-    compute_source = inspect.getsource(aggregation_module.compute_encrypted_audit)
-    packet_source = inspect.getsource(aggregation_module.build_encrypted_aggregate_packet)
+    # Structural check: the LEGACY compute_encrypted_audit_legacy_compsim's
+    # and build_encrypted_aggregate_packet_legacy_compsim's own source (not
+    # the whole module) contain no decrypt call -- referenced explicitly
+    # via the module (not this file's aliased local names) so this check
+    # is unambiguous about which implementation it inspects.
+    compute_source = inspect.getsource(aggregation_module.compute_encrypted_audit_legacy_compsim)
+    packet_source = inspect.getsource(aggregation_module.build_encrypted_aggregate_packet_legacy_compsim)
     assert ".decrypt(" not in compute_source
     assert ".decrypt(" not in packet_source
 
@@ -206,7 +216,7 @@ def test_8_packet_producible_with_public_only_context(pipeline):
 
 
 def test_9_packet_consumable_by_fla_private_context(pipeline):
-    from fairlend.audit.aggregation import decrypt_audit_packet_for_diagnostics
+    from fairlend.audit.aggregation import decrypt_audit_packet_for_diagnostics_legacy_compsim as decrypt_audit_packet_for_diagnostics
 
     result = compute_encrypted_audit(
         pipeline["records"], pipeline["ip"].public_key, pipeline["references"], pipeline["lpu_context"],

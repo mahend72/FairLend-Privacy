@@ -1,0 +1,5 @@
+operation,n,mean_seconds,std_seconds,median_seconds,min_seconds,max_seconds,mean_peak_rss_kb,max_peak_rss_kb,note
+witness_generation,10,0.3364626205,0.07965627283453906,0.31913297949999997,0.257083736,0.545160177,70488.8,70716.0,
+proving,10,5.0043687283,0.5412125753997138,4.9753469455,4.057501394,5.733294015,388766.4,390192.0,
+verification,10,3.1691404324,0.509122208007249,3.0436343995,2.623322833,4.442559678,180633.6,181676.0,
+setup_one_time_only,1,,,,,,,,"Setup (Powers-of-Tau + Groth16 keygen) runs ONCE per circuit, not per proof; see reviewer2_phase3b_nizkp_instantiation_report.md for the one observed setup timing."

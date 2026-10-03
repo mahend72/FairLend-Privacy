@@ -22,9 +22,16 @@ This script does NOT fit, retrain, or re-select tau. It:
   3. runs the REAL encrypted aggregation path (IP credential issuance ->
      LPU-verified compSim -> conditional homomorphic aggregation ->
      aggregate-only packet -> FLA diagnostic decryption), via the
-     unmodified ``fairlend.audit.aggregation.compute_encrypted_audit`` /
-     ``build_encrypted_aggregate_packet`` / ``decrypt_audit_packet_for_
-     diagnostics``, using MEMORY-BOUNDED streaming (see
+     unmodified LEGACY (Phase 5, compSim-based)
+     ``fairlend.audit.aggregation.compute_encrypted_audit_legacy_compsim``
+     / ``build_encrypted_aggregate_packet_legacy_compsim`` /
+     ``decrypt_audit_packet_for_diagnostics_legacy_compsim`` (imported
+     below under their original bare names via explicit aliasing, so
+     this script's behaviour and output schema -- including
+     ``reference_fingerprint``, which only this path produces -- remain
+     unchanged across both the Phase 1 and Phase 2 architecture changes;
+     see those reports for why this script was deliberately left on the
+     legacy path), using MEMORY-BOUNDED streaming (see
      ``_LazyEncryptedRecords`` below -- one credential/similarity-pair
      ciphertext alive at a time, never all TEST rows' credentials at
      once);
@@ -37,6 +44,19 @@ STOP CONDITION: if any of the 12 rounded decrypted aggregates does not
 exactly equal its plaintext counterpart, this script writes the aggregate
 report (clearly flagging the mismatch), does NOT compute or write the
 fairness-reconstruction artifact, and exits non-zero.
+
+PHASE 1 NOTE (compSim removal, reviewer2_phase1_compsim_removal_report.md):
+this script deliberately continues to use the LEGACY compSim-based
+aggregation path (imported here under its original names via explicit
+``_legacy_compsim`` aliasing), so that the already-committed real-data
+artifacts this script produced (``results/evaluation/{lr,rf}_balanced_
+accuracy_{encrypted_audit,fairness_reconstruction}.json``, including
+their ``reference_fingerprint`` provenance field, which only exists for
+the reference-vector-based legacy path) remain exactly reproducible and
+their schema unchanged. Migrating this specific script to the new
+direct-addition path is deliberately deferred, not blocked by anything
+architectural -- see the Phase 1 report's "Impact on existing result
+artifacts" and "Readiness for Phase 2" sections.
 
 Usage:
     python evaluation/run_primary_policy_encrypted_audit.py \\
@@ -70,10 +90,10 @@ import pandas as pd
 from fairlend.audit.aggregation import (
     EncryptedTestRecord,
     build_audit_frame,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
+    build_encrypted_aggregate_packet_legacy_compsim as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_legacy_compsim as compute_encrypted_audit,
     compute_plaintext_audit,
-    decrypt_audit_packet_for_diagnostics,
+    decrypt_audit_packet_for_diagnostics_legacy_compsim as decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.audit.fairness import compute_demographic_parity, compute_equalised_odds
 from fairlend.audit.reconstruction import compute_aggregate_reconstruction, compute_fairness_reconstruction

@@ -2,6 +2,23 @@
 """Phase 11: reproducible runtime and communication-size benchmarking of
 the REBUILT FairLend implementation.
 
+PHASE 1 NOTE (compSim removal, reviewer2_phase1_compsim_removal_report.md):
+this script deliberately continues to benchmark the LEGACY compSim-based
+aggregation path (imported here under its original names via explicit
+``_legacy_compsim`` aliasing) so that ``results/benchmarks/*.csv``
+remain exactly reproducible from this script unchanged. It does not
+benchmark the CKKS direct-addition baseline or the BFV active path --
+that is follow-up work, not required to validate the Phase 1
+architectural change itself (see the Phase 1 report's "Impact on
+existing result artifacts" section).
+
+PHASE 2 NOTE (CKKS -> BFV migration, reviewer2_phase2_bfv_migration_report.md):
+this script's numbers are the LEGACY compSim-path leg of a three-way
+comparison only -- the primary CKKS-direct-vs-BFV-direct benchmark
+(the scientifically relevant comparison for Phase 2) is
+``evaluation/run_ckks_vs_bfv_benchmarks.py``, which writes its own,
+separately-named result files and does not touch this script's output.
+
 Every timing benchmark calls the actual production functions
 (``fairlend.crypto``/``fairlend.audit``/``fairlend.roles``) unmodified --
 this script adds no new cryptographic or protocol behaviour, only
@@ -47,9 +64,9 @@ from fairlend.audit.aggregation import (
     EncryptedTestRecord,
     GroupAuditCounts,
     PlaintextAuditResult,
-    build_encrypted_aggregate_packet,
-    compute_encrypted_audit,
-    decrypt_audit_packet_for_diagnostics,
+    build_encrypted_aggregate_packet_legacy_compsim as build_encrypted_aggregate_packet,
+    compute_encrypted_audit_legacy_compsim as compute_encrypted_audit,
+    decrypt_audit_packet_for_diagnostics_legacy_compsim as decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.audit.fairness import compute_demographic_parity, compute_equalised_odds
 from fairlend.audit.similarity import comp_sim, generate_encrypted_references, load_reference_vectors

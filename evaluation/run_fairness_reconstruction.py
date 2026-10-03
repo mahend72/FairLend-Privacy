@@ -4,21 +4,37 @@ FairLend's encrypted aggregate audit reconstructs the SAME DP/EO as the
 Phase 2 plaintext audit when both use identical held-out decisions.
 
 This script does NOT implement any fairness formula itself -- it produces
-a real ``EncryptedAuditPacket`` via the UNMODIFIED Phase 5 pipeline
+a real ``EncryptedAuditPacket`` via the Phase 1 direct-addition pipeline
 (``fairlend.audit.aggregation.compute_encrypted_audit`` /
 ``build_encrypted_aggregate_packet`` / ``decrypt_audit_packet_for_
 diagnostics``, using the SAME functions ``evaluation/run_encrypted_audit.py``
-calls), then hands the plaintext oracle row and the decrypted packet to
+calls, per this script's own design -- see PHASE 1 NOTE below), then
+hands the plaintext oracle row and the decrypted packet to
 ``fairlend.audit.reconstruction`` for the actual comparison. See that
 module for the DP/EO/rounding/raw-CKKS-diagnostic logic -- none of it is
 duplicated here.
 
+PHASE 1 NOTE (compSim removal, reviewer2_phase1_compsim_removal_report.md):
+migrated alongside ``evaluation/run_encrypted_audit.py`` to the direct
+encrypted-additive aggregation path (no compSim, no reference vectors,
+multiplicative depth 0), since this script's own docstring already
+states it uses "the SAME functions evaluation/run_encrypted_audit.py
+calls" -- keeping that true was the reason for migrating both together.
+The legacy compSim-based path remains available under its explicit
+``_legacy_compsim`` names for the Phase 1 equivalence check.
+
+PHASE 2 NOTE (CKKS -> BFV migration, reviewer2_phase2_bfv_migration_report.md):
+migrated again, alongside ``evaluation/run_encrypted_audit.py``, to the
+BFV-backed direct-addition path for the same reason -- keeping "the SAME
+functions" true. The Phase 1 CKKS-direct baseline remains available
+under its explicit ``_ckks_direct`` names.
+
 IMPORTANT -- this is a FRESH, INDEPENDENT run of that pipeline, NOT a
 reuse of any packet ``run_encrypted_audit.py`` (or a prior run of this
-script) produced: this script calls ``build_fla_context()``,
-``generate_encrypted_references()``, and ``IdentityProvider.issue_
-credential()`` itself, all of which are randomised/produce fresh CKKS
-ciphertexts every invocation (Sec. 4.6). Consequently, the RAW decrypted
+script) produced: this script calls ``build_fla_context()`` and
+``IdentityProvider.issue_credential()`` itself, both of which are
+randomised/produce fresh CKKS ciphertexts every invocation (Sec. 4.6).
+Consequently, the RAW decrypted
 aggregate values -- and their absolute error against the plaintext oracle
 -- from this script will differ, in their last few significant digits,
 from any other invocation's, including ``run_encrypted_audit.py``'s. Only
@@ -65,13 +81,12 @@ from fairlend.audit.aggregation import (
     decrypt_audit_packet_for_diagnostics,
 )
 from fairlend.audit.reconstruction import compute_aggregate_reconstruction, compute_fairness_reconstruction
-from fairlend.core.config import CKKSConfig, load_evaluation_config
-from fairlend.crypto.ckks import build_fla_context, derive_lpu_context
+from fairlend.core.config import BFVConfig, load_evaluation_config
+from fairlend.crypto.bfv import build_fla_context, derive_lpu_context
 from fairlend.crypto.hashing import sha256_hex
-from fairlend.audit.similarity import generate_encrypted_references, load_reference_vectors
 from fairlend.data.loader import VALID_DATA_SCOPES, save_json, stamp_data_scope
 from fairlend.models.credit_models import MODEL_NAMES
-from fairlend.roles.identity_provider import IdentityProvider
+from fairlend.roles.identity_provider import IdentityProviderBFV as IdentityProvider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "configs" / "evaluation.yaml"
@@ -79,19 +94,19 @@ DEFAULT_CONFIG_PATH = REPO_ROOT / "configs" / "evaluation.yaml"
 
 def _packet_sha256(packet: EncryptedAuditPacket) -> str:
     """See evaluation/run_encrypted_audit.py's identical helper -- a
-    reproducibility/debugging fingerprint, not a security mechanism."""
-    ordered = (
-        packet.male.C, packet.male.A, packet.male.P, packet.male.TP, packet.male.N, packet.male.FP,
-        packet.female.C, packet.female.A, packet.female.P, packet.female.TP, packet.female.N, packet.female.FP,
-    )
+    reproducibility/debugging fingerprint, not a security mechanism.
+    Phase 1: 6 ciphertexts (one 2-slot ciphertext per statistic, both
+    groups packed together), half the legacy path's 12."""
+    ordered = (packet.C, packet.A, packet.P, packet.TP, packet.N, packet.FP)
     return sha256_hex(b"".join(ordered))
 
 
-def _ckks_config_dict(config: CKKSConfig) -> dict:
+def _bfv_config_dict(config: BFVConfig) -> dict:
     return {
         "poly_modulus_degree": config.poly_modulus_degree,
+        "plain_modulus": config.plain_modulus,
         "coeff_mod_bit_sizes": list(config.coeff_mod_bit_sizes),
-        "global_scale_power": config.global_scale_power,
+        "max_safe_count": config.max_safe_count,
     }
 
 
@@ -171,12 +186,11 @@ def main() -> int:
 
     run_id = uuid.uuid4().hex
     run_timestamp_utc = datetime.now(timezone.utc).isoformat()
-    ckks_config = _ckks_config_dict(CKKSConfig())
+    bfv_config = _bfv_config_dict(BFVConfig())
 
     fla_context = build_fla_context()
     lpu_context = derive_lpu_context(fla_context)
     ip = IdentityProvider(lpu_context)
-    references = load_reference_vectors(generate_encrypted_references(fla_context), lpu_context)
 
     flat_rows = []
     detail_rows = []
@@ -186,8 +200,8 @@ def main() -> int:
             model_predictions, synthetic_gender, test_dp_index, test_eo_index, train_index, validation_index, ip
         )
 
-        # --- Real Phase 5 pipeline, unmodified ---
-        result = compute_encrypted_audit(records, ip.public_key, references, lpu_context, model_name=model_name)
+        # --- Real Phase 1 direct-addition pipeline ---
+        result = compute_encrypted_audit(records, ip.public_key, lpu_context, model_name=model_name)
         packet = build_encrypted_aggregate_packet(result)
         decrypted = decrypt_audit_packet_for_diagnostics(packet, fla_context)
 
@@ -241,7 +255,7 @@ def main() -> int:
                 {
                     "run_id": run_id,
                     "run_timestamp_utc": run_timestamp_utc,
-                    "ckks_config": ckks_config,
+                    "bfv_config": bfv_config,
                     "packet_sha256": packet_fingerprint,
                     "model": model_name,
                     "aggregate": dataclasses.asdict(agg),

@@ -5,6 +5,22 @@ decryption -> reconstruction), built from tests/fixtures/lendingclub_sample.csv
 via library calls -- no dependency on the gitignored data/processed/
 directory, portable to a fresh clone/CI.
 
+PHASE 1 STATUS (compSim removal, reviewer2_phase1_compsim_removal_report.md):
+migrated to the direct encrypted-additive aggregation path, consistent
+with ``evaluation/run_fairness_reconstruction.py``'s own migration --
+this file's fixture builds real, independently-fitted LR and RF models
+(not a relabelled shared record set), so it remains the primary LR+RF
+coverage of the new path against genuinely different per-model
+predictions.
+
+PHASE 2 STATUS (CKKS -> BFV migration,
+reviewer2_phase2_bfv_migration_report.md): migrated again, alongside
+``evaluation/run_fairness_reconstruction.py``, to BFV -- this is now the
+primary LR+RF coverage of the ACTIVE BFV path against genuinely
+different per-model predictions (the CKKS-direct baseline's own
+LR+RF coverage lives in
+``tests/scientific/test_encrypted_aggregation_direct.py``, unchanged).
+
 Covers task Sec. 16 items 1-6, 8-15 (release-status/zero-denominator
 agreement and "no borrower-level fields" are covered more directly by
 tests/unit/test_reconstruction.py's hand-built-fixture tests; this file
@@ -31,7 +47,7 @@ from fairlend.audit.aggregation import (
 from fairlend.audit.reconstruction import compute_aggregate_reconstruction, compute_fairness_reconstruction
 from fairlend.audit.fairness import NOT_CONFIGURED, compute_demographic_parity, compute_equalised_odds
 from fairlend.core.config import load_evaluation_config
-from fairlend.crypto.ckks import build_fla_context, context_can_decrypt, derive_lpu_context
+from fairlend.crypto.bfv import build_fla_context, context_can_decrypt, derive_lpu_context
 from fairlend.data.audit_scope import compute_final_audit_populations
 from fairlend.data.loader import load_raw_lendingclub
 from fairlend.data.outcomes import map_repayment_outcome
@@ -46,8 +62,7 @@ from fairlend.models.credit_models import (
     select_best_logistic_regression,
     select_best_random_forest,
 )
-from fairlend.audit.similarity import generate_encrypted_references, load_reference_vectors
-from fairlend.roles.identity_provider import IdentityProvider
+from fairlend.roles.identity_provider import IdentityProviderBFV as IdentityProvider
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "lendingclub_sample.csv"
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "evaluation.yaml"
@@ -93,7 +108,6 @@ def full_pipeline():
     fla_context = build_fla_context()
     lpu_context = derive_lpu_context(fla_context)
     ip = IdentityProvider(lpu_context)
-    references = load_reference_vectors(generate_encrypted_references(fla_context), lpu_context)
 
     results = {}
     for model_name, model in models.items():
@@ -117,7 +131,7 @@ def full_pipeline():
                 EncryptedTestRecord(row_index=int(row.row_index), credential=credential, y_pred=int(row.y_pred), y_true=y_true)
             )
 
-        encrypted_result = compute_encrypted_audit(records, ip.public_key, references, lpu_context, model_name=model_name)
+        encrypted_result = compute_encrypted_audit(records, ip.public_key, lpu_context, model_name=model_name)
         packet = build_encrypted_aggregate_packet(encrypted_result)
         decrypted = decrypt_audit_packet_for_diagnostics(packet, fla_context)
 
@@ -226,13 +240,13 @@ def test_only_fla_context_can_produce_the_decrypted_packet(full_pipeline):
 def _rebuild_packet(full_pipeline, model_name):
     """Helper: reconstruct a packet object purely to exercise the
     decrypt-boundary check without re-running the whole pipeline."""
-    from fairlend.audit.aggregation import EncryptedGroupAuditCounts, EncryptedAuditResult
+    from fairlend.audit.aggregation import EncryptedAuditCounts, EncryptedAuditResult
 
     data = full_pipeline[model_name]
     lpu_context = data["lpu_context"]
-    zero = lambda: ts.ckks_vector(lpu_context, [0.0])
-    group = EncryptedGroupAuditCounts(C=zero(), A=zero(), P=zero(), TP=zero(), N=zero(), FP=zero())
+    zero = lambda: ts.bfv_vector(lpu_context, [0, 0])
+    counts = EncryptedAuditCounts(C=zero(), A=zero(), P=zero(), TP=zero(), N=zero(), FP=zero())
     result = EncryptedAuditResult(
-        male=group, female=group, model=model_name, test_population_n=0, resolved_test_n=0, unresolved_test_n=0
+        counts=counts, model=model_name, test_population_n=0, resolved_test_n=0, unresolved_test_n=0
     )
     return build_encrypted_aggregate_packet(result)

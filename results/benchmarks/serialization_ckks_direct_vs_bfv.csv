@@ -1,0 +1,5 @@
+object,ckks_direct_bytes,bfv_bytes,bfv_minus_ckks_bytes,bfv_relative_change_pct
+protected_attribute_ciphertext,331567,432458,100891,30.42854083790003
+lpu_public_context,35289669,542011,-34747658,-98.46410857523203
+fla_private_context_LENGTH_ONLY,697395,812853,115458,16.555610522014067
+complete_six_ciphertext_audit_packet,1989886,2594751,604865,30.39696746446781

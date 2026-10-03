@@ -1,0 +1,2 @@
+n_configurations,n_count_comparisons,n_exact_matches,max_absolute_count_error,mean_absolute_count_error,max_dp_reconstruction_difference,max_eo_reconstruction_difference,git_commit,git_dirty,dataset_sha256,timestamp_utc
+9,108,108,0.0,0.0,0.0,0.0,1cdd61a57dca1d208e8b5b75884995ff864be807,True,3eae03c28fd9d2e8a076ebeb73507e8d4d0f44d90500decdb0936e0933d1f36a,2026-09-30T08:24:06.531242+00:00
