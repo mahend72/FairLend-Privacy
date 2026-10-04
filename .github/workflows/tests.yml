@@ -58,7 +58,7 @@ jobs:
 
       - name: Verify the package imports
         run: python -c "import fairlend"
-	
+  
       - name: Run test suite
         # No raw or processed LendingClub data is required: every test
         # exercises tests/fixtures/lendingclub_sample.csv (a small,
